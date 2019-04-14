@@ -1,3 +1,26 @@
+[cmdletbinding()]
+param()
+#import functions
+$Public  = @( Get-ChildItem -Path "$PSScriptRoot\functions\public\*.ps1" )
+$Private = @( Get-ChildItem -Path "$PSScriptRoot\functions\private\*.ps1" )
+
+
+@($Public + $Private) | ForEach-Object {
+
+    Try {
+
+        Write-Verbose "Importing -> [$($_.FullName)]!"
+        . $_.FullName
+
+    } Catch {
+
+        Write-Error -Message "Failed to import function $($_.FullName): $_"
+        
+    }
+
+}
+
+$config = Import-Config -Path "$PSScriptRoot/config.json"
 
 $myCallSign = 'KF7IGN'
 $myGrid     = 'CN85'
@@ -33,41 +56,6 @@ function Import-WsjtxLog {
 
 }
 
-function Invoke-CallSignLookup {
-    [cmdletbinding()]
-    param(
-        [Parameter(
-            Mandatory
-        )]
-        $CallSign
-    )
-
-    begin {
-
-        $url = "https://callook.info/$($CallSign)/json"
-
-    }
-    process {
-
-        try {
-
-            $result = Invoke-RestMethod -Uri $Url  
-
-        }
-        catch {
-
-            $errorMessage = $_.Exception.Message
-            Write-Error $errorMessage
-
-        }
-
-    }
-    end {
-
-        return $result
-
-    }
-}
 
 $logData = Import-WsjtxLog
 
@@ -83,6 +71,6 @@ if ($logData) {
 
     foreach ($contact in $fromToday) {
 
-        
+
     }
  }
