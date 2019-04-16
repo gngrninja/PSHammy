@@ -22,7 +22,8 @@ $Private = @( Get-ChildItem -Path "$PSScriptRoot\functions\private\*.ps1" )
 
 $config = Import-Config -Path "$PSScriptRoot/config.json"
 $data = Get-AzureMapsInfo -RequestData "97209" -RequestType "Search"
-write-host $data
+return $data
+break
 $myCallSign = 'KF7IGN'
 $myGrid     = 'CN85'
 
