@@ -59,6 +59,7 @@ function Invoke-CallSignLookup {
                     #Get the data we need in a shorter variable path
                     $resultData = $result.hamdb.callsign
 
+                    Write-Verbose ($resultData | Out-String)
                     #Assign data to object we return
                     $callSignData.CallSign  = $resultData.call
                     $callSignData.Class     = $resultData.class
