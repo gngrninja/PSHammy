@@ -20,7 +20,7 @@ function Import-WsjtxLog {
         'empty3'
     )
     
-    Write-Host ($logHeaders | Out-String)
+    Write-Verbose ($logHeaders | Out-String)
     Write-Verbose "Log file [$($LogPath)] accessible..."
 
     $importedLog = Import-Csv -Path $LogPath -Header $logHeaders

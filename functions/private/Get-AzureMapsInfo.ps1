@@ -55,11 +55,11 @@ function Get-AzureMapsInfo {
 
                 if ($DefaultCenter) {
                     $center = "-98.57,39.82"
-                    $DefaultZoom = "3"
+                    $DefaultZoom = "2"
                 }
-                $baseUrl = "$($Prefix)/map/static/png?api-version=1.0&center=$($center)&pins=default%7CcoFF1493%7C%7C'$($PinData.MyCall)'$($PinData.MyLong)%20$($PinData.MyLat)%7C'$($PinData.TheirCall)'$($PinData.TheirLong)%20$($PinData.TheirLat)&zoom=$($DefaultZoom)"
+                $baseUrl = "$($Prefix)/map/static/png?api-version=1.0&center=$($center)&pins=default%7CcoFF1493%7C%7C'$($PinData.MyCall)'$($PinData.MyLong)%20$($PinData.MyLat)%7C'$($PinData.TheirCall)'$($PinData.TheirLong)%20$($PinData.TheirLat)&zoom=$($DefaultZoom)&layer=basic"
                 Write-Verbose $baseUrl
-                $response = Invoke-RestMethod -Uri $baseUrl -Headers $headers -OutFile ".\image.png"
+                $response = Invoke-RestMethod -Uri $baseUrl -Headers $headers -OutFile ".\output\$($PinData.TheirCall).png"
 
             }
 
@@ -72,11 +72,6 @@ function Get-AzureMapsInfo {
 
             'SearchAndPin' {
 
-                 
-
-                #From
-
-                #To                
                 $baseUrl = "$($Prefix)/search/fuzzy/json?api-version=1.0&query=$($RequestData)"
                 $response = Invoke-RestMethod -Uri $baseUrl -Headers $headers
 
