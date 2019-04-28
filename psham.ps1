@@ -1,5 +1,11 @@
 [cmdletbinding()]
-param()
+param(
+    [Parameter(
+        Mandatory
+    )]
+    $DefaultCall = 'KF7IGN'
+)
+
 #import functions
 $Public  = @( Get-ChildItem -Path "$PSScriptRoot\functions\public\*.ps1" )
 $Private = @( Get-ChildItem -Path "$PSScriptRoot\functions\private\*.ps1" )
@@ -21,55 +27,36 @@ $Private = @( Get-ChildItem -Path "$PSScriptRoot\functions\private\*.ps1" )
 }
 
 $config = Import-Config -Path "$PSScriptRoot/config.json"
-$data = Get-AzureMapsInfo -RequestData "97209" -RequestType "Search"
-return $data
-break
-$myCallSign = 'KF7IGN'
-$myGrid     = 'CN85'
-
-function Import-WsjtxLog {
-    [cmdletbinding()]
-    param(
-        $LogPath = '.\wsjtx.log'
-    )
-
-    [array]$logHeaders = (
-        'WorkedDate',
-        'WorkedTime',
-        'WorkedDateAgain',
-        'WorkedTimeAgain',
-        'WorkedCallSign',
-        'GridSquare',
-        'Frequency',
-        'Mode',
-        'ReportedSignalRec',
-        'ReportedSignalSent',
-        'empty1',
-        'empty2',
-        'empty3'
-    )
-    
-    Write-Host ($logHeaders | Out-String)
-    Write-Verbose "Log file [$($pathToLogFile)] accessible..."
-
-    $importedLog = Import-Csv -Path $LogPath -Header $logHeaders
-
-    return $importedLog
-
-}
-
 
 $logData = Import-WsjtxLog
 
 if ($logData) {
 
+    $myCallData    = Invoke-CallSignLookup -CallSign $DefaultCall
+    $theirCallInfo = Invoke-CallSignLookup -CallSign 'KI7WIK'
+
     $processed = Get-Content ".\processed.json" | ConvertFrom-Json
+
+    $myLocation = Get-AzureMapsInfo -RequestData "$($myCallData.Addy) $($myCallData.Zip)" -RequestType 'Search'
+    
+    $theirLocation = Get-AzureMapsInfo -RequestData "$($theirCallInfo.Addy) $($theirCallInfo.Zip)" -RequestType 'Search'
+
+    $pinData = [PSCustomObject]@{
+
+        MyCall    = $myCallData.CallSign
+        MyLat     = $myLocation.results[0].position.lat
+        MyLong    = $myLocation.results[0].position.lon
+        TheirCall = $theirCallInfo.CallSign 
+        TheirLat  = $theirLocation.results[0].position.lat
+        TheirLong = $theirLocation.results[0].position.lon
+        
+    }
+    
+    Get-AzureMapsInfo -RequestType MapPin -PinData $pinData -DefaultCenter
 
     $fromToday = $logData | Where-Object {$_.WorkedDate -eq (Get-Date).ToString("yyyy-MM-dd")}
 
-    $fromToday
-
-    $myCallInfo = Invoke-CallSignLookup -CallSign $myCallSign
+    $fromToday    
 
     foreach ($contact in $fromToday) {
 

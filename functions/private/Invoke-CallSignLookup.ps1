@@ -40,8 +40,11 @@ function Invoke-CallSignLookup {
             Grid      = ''
             Lat       = ''
             Long      = ''
-            Country   = ''   
+            Country   = '' 
+            Addy      = ''
+            AddyTwo   = '' 
             State     = ''
+            Zip       = ''
 
         }
 
@@ -71,7 +74,9 @@ function Invoke-CallSignLookup {
                     $callSignData.State     = $resultData.state
                     $callSignData.Country   = $resultData.country
                     $callSignData.FirstName = $resultData.fname 
-                    
+                    $callSignData.Addy      = $resultData.addr1
+                    $callSignData.AddyTwo   = $resultData.addr2
+                    $callSignData.Zip       = $resultData.zip
                 }
 
                 'calllook' {
