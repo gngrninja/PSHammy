@@ -31,20 +31,13 @@ function Get-AzureMapsInfo {
 
     begin {
 
-        $Prefix = 'https://atlas.microsoft.com'
+        $prefix = 'https://atlas.microsoft.com'
 
         $headers = @{
+
             'x-ms-client-id' = $config.AzureMapsApiKey
-        }
-         
-        switch ($RequestType) {
-            'Search' {
-                
-            }
-            'MapPin' {
-                
-            }
-        }
+
+        }         
     }
 
     process {
@@ -54,25 +47,36 @@ function Get-AzureMapsInfo {
             'MapPin' {
 
                 if ($DefaultCenter) {
+                    
                     $center = "-98.57,39.82"
-                    $DefaultZoom = "2"
+                    $DefaultZoom = '2'
+
+                    if ($PinData) {
+
+                        $getCenter = Get-CenterCoord $PinData
+                        $center    = "$($getCenter.CentralLong),$($getCenter.CentralLat)"                         
+
+                    }
                 }
-                $baseUrl = "$($Prefix)/map/static/png?api-version=1.0&center=$($center)&pins=default%7CcoFF1493%7C%7C'$($PinData.MyCall)'$($PinData.MyLong)%20$($PinData.MyLat)%7C'$($PinData.TheirCall)'$($PinData.TheirLong)%20$($PinData.TheirLat)&zoom=$($DefaultZoom)&layer=basic"
-                Write-Verbose $baseUrl
-                $response = Invoke-RestMethod -Uri $baseUrl -Headers $headers -OutFile ".\output\$($PinData.TheirCall).png"
+                                
+                $baseUrl = "$($prefix)/map/static/png?api-version=1.0&center=$($center)&pins=default%7CcoFF1493%7Cla5%204%7C%7C'$($PinData.MyCall)'$($PinData.MyLong)%20$($PinData.MyLat)%7C'$($PinData.TheirCall)'$($PinData.TheirLong)%20$($PinData.TheirLat)&zoom=$($DefaultZoom)&layer=basic"
+                
+                Write-Verbose "Request URL -> [$baseUrl]"
+                
+                $response = Invoke-RestMethod -Uri $baseUrl -Headers $headers -OutFile ".\output\$($PinData.TheirCall)$($PinData.DateTimeWorked).png"
 
             }
 
             'Search' {
 
-                $baseUrl = "$($Prefix)/search/fuzzy/json?api-version=1.0&query=$($RequestData)"  
+                $baseUrl = "$($prefix)/search/fuzzy/json?api-version=1.0&query=$($RequestData)"  
                 $response = Invoke-RestMethod -Uri $baseUrl -Headers $headers
                 
             }
 
             'SearchAndPin' {
 
-                $baseUrl = "$($Prefix)/search/fuzzy/json?api-version=1.0&query=$($RequestData)"
+                $baseUrl = "$($prefix)/search/fuzzy/json?api-version=1.0&query=$($RequestData)"
                 $response = Invoke-RestMethod -Uri $baseUrl -Headers $headers
 
                 $firstResult = $response.results[0].position
@@ -83,9 +87,11 @@ function Get-AzureMapsInfo {
                 $response = $null
                 $baseUrl  = $null
 
-                $baseUrl  = "$($Prefix)/map/static/png?api-version=1.0&center=$($lon),$($lat)&pins=default%7C%7C$($lon) $($lat)&zoom=$($DefaultZoom)"
-                Write-Verbose "$baseUrl"
+                $baseUrl  = "$($prefix)/map/static/png?api-version=1.0&center=$($lon),$($lat)&pins=default%7C%7C$($lon)%20$($lat)&zoom=$($DefaultZoom)"
+
+                Write-Verbose "Request URL -> [$baseUrl]"
                 $response = Invoke-RestMethod -Uri $baseUrl -Headers $headers -OutFile ".\image.png"
+
 
             }
         }
