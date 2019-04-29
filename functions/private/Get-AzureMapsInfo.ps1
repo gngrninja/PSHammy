@@ -54,16 +54,58 @@ function Get-AzureMapsInfo {
                     if ($PinData) {
 
                         $getCenter = Get-CenterCoord $PinData
-                        $center    = "$($getCenter.CentralLong),$($getCenter.CentralLat)"                         
+                        $center    = "$($getCenter.CentralLong),$($getCenter.CentralLat)"  
 
+                        $centerDif = $getCenter.CentralLong - $PinData.MyLong
+
+                        Write-Verbose "Center Difference -> [$centerDif]"
+
+                        switch ($centerDif) {
+
+                            {$centerDif -lt 1} {
+
+                                $DefaultZoom = '9'
+
+                            }
+
+                            {($centerDif) -gt 1 -and ($centerDif -lt 2)} {
+
+                                $DefaultZoom = '5'
+
+                            }
+
+                            {($centerDif) -gt 2 -and ($centerDif -lt 4)} {
+
+                                $DefaultZoom = '4'
+
+                            }
+
+                            {($centerDif -gt 9) -and ($centerDif -lt 17)} {
+
+                                $DefaultZoom = '4'  
+                            }
+
+                            {$centerDif -gt 17} {
+
+                                $DefaultZoom = '2'
+                            }
+
+                            default {
+                                
+                                $DefaultZoom = '3'                                    
+
+                            }
+                        }                                                                                                
                     }
                 }
                                 
-                $baseUrl = "$($prefix)/map/static/png?api-version=1.0&center=$($center)&pins=default%7CcoFF1493%7Cla5%204%7C%7C'$($PinData.MyCall)'$($PinData.MyLong)%20$($PinData.MyLat)%7C'$($PinData.TheirCall)'$($PinData.TheirLong)%20$($PinData.TheirLat)&zoom=$($DefaultZoom)&layer=basic"
-                
+                $baseUrl = "$($prefix)/map/static/png?api-version=1.0&center=$($center)&pins=default%7CcoFF1493%7C%7C'$($PinData.MyCall)'$($PinData.MyLong)%20$($PinData.MyLat)%7C'$($PinData.TheirCall)'$($PinData.TheirLong)%20$($PinData.TheirLat)&zoom=$($DefaultZoom)&layer=basic"
+                #%7Cla5%204
                 Write-Verbose "Request URL -> [$baseUrl]"
                 
-                $response = Invoke-RestMethod -Uri $baseUrl -Headers $headers -OutFile ".\output\$($PinData.TheirCall)$($PinData.DateTimeWorked).png"
+                Invoke-RestMethod -Uri $baseUrl -Headers $headers -OutFile ".\output\$($PinData.TheirCall)$($PinData.DateTimeWorked).png"
+
+                $response = (Get-ChildItem -Path ".\output\$($PinData.TheirCall)$($PinData.DateTimeWorked).png" | Select-Object -ExpandProperty FullName)                
 
             }
 
@@ -90,8 +132,7 @@ function Get-AzureMapsInfo {
                 $baseUrl  = "$($prefix)/map/static/png?api-version=1.0&center=$($lon),$($lat)&pins=default%7C%7C$($lon)%20$($lat)&zoom=$($DefaultZoom)"
 
                 Write-Verbose "Request URL -> [$baseUrl]"
-                $response = Invoke-RestMethod -Uri $baseUrl -Headers $headers -OutFile ".\image.png"
-
+                $response = Invoke-RestMethod -Uri $baseUrl -Headers $headers -OutFile ".\image.png"                
 
             }
         }

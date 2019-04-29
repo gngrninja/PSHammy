@@ -1,9 +1,10 @@
+using module PSDsHook
 [cmdletbinding()]
 param(
     [Parameter(
-        Mandatory
+        
     )]
-    $DefaultCall = 'KF7IGN'
+    $DefaultCall 
 )
 
 #import functions
@@ -28,11 +29,14 @@ $Private = @( Get-ChildItem -Path "$PSScriptRoot\functions\private\*.ps1" )
 
 $config = Import-Config -Path "$PSScriptRoot/config.json"
 
-$logData = Import-WsjtxLog
-$processed = Invoke-ProcessedLog -Action Get
+if ($config.DefaultCall) {
 
-$processed
- 
+    $DefaultCall = $config.DefaultCall
+
+}
+
+$logData = Import-WsjtxLog
+$processed = Invoke-ProcessedLog -Action Get 
 
 if ($logData) {
 
@@ -46,12 +50,13 @@ if ($logData) {
         [DateTime]$_.WorkedDate -ge [DateTime]::Now.AddDays(-30).ToString("yyyy-MM-dd")
 
     }
-
-    $fromToday    
-
+      
     foreach ($contact in $fromToday) {
 
+        $embedBuilder  = $null
         $theirCallInfo = $null
+        $details       = $null
+        $title         = $null
 
         $theirCallInfo = Invoke-CallSignLookup -CallSign $contact.WorkedCallSign
 
@@ -73,8 +78,67 @@ if ($logData) {
 
         Write-Verbose ($PinData | Out-String)
 
-        Get-AzureMapsInfo -RequestType MapPin -PinData $pinData -DefaultCenter
-                
+        try {
 
+            $result = Get-AzureMapsInfo -RequestType MapPin -PinData $pinData -DefaultCenter            
+
+            $thumbUrl = 'https://static1.squarespace.com/static/5644323de4b07810c0b6db7b/t/5aa44874e4966bde3633b69c/1520715914043/webhook_resized.png'
+
+            $title   = "New FT8 contact [$($pinData.MyCall)] <-> [$($pinData.TheirCall)]"
+            $details = "New contact! Check out the map below!"
+
+            $embedBuilder = [DiscordEmbed]::new(
+                $title,
+                $details                
+            )
+
+            
+            $embedBuilder.WithColor(
+                [DiscordColor]::New(
+                    'purple'
+                )
+            )
+
+            $embedBuilder.AddField(
+                [DiscordField]::New(
+                    'Received Signal',
+                    "$($contact.ReportedSignalRec)",
+                    $true
+
+                )
+            )
+
+            $embedBuilder.AddField(
+                [DiscordField]::New(
+                    'Sent Signal',
+                    "$($contact.ReportedSignalSent)",
+                    $true
+                )
+            )  
+
+            $embedBuilder.AddField(
+                [DiscordField]::New(
+                    'Time Worked',
+                    "[$($contact.WorkedDate)] [$($contact.WorkedTime)]"
+                )
+            )  
+            $embedBuilder.AddFooter(
+                [DiscordFooter]::New(
+                    "Ham radio is fun! This report was brought to you by PSHammy",
+                    $thumbUrl
+
+                )
+            )
+
+            Invoke-PSDsHook -EmbedObject $embedBuilder
+
+            Invoke-PSDsHook -FilePath $result            
+        }
+        catch {
+
+            $errorMessage = $_.Exception.Message
+            Write-Error "Error -> [$errorMessage]!"
+
+        }        
     }
  }

@@ -30,7 +30,7 @@ function Get-CenterCoord {
         $y += [Math]::Cos($theirLatitude) * [Math]::Sin($theirLongitude)
         $z += [Math]::Sin($theirLatitude)
 
-        $total = 4
+        $total = 2
 
         $x = $x / $total
         $y = $y / $total
