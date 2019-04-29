@@ -12,6 +12,7 @@ param(
 [string]$inputPath       = $null
 [string]$hammyConfigPath = $null
 [string]$processedPath   = $null
+[array]$processed        = $null
 
 #Get OS specific information
 $script:separator = [IO.Path]::DirectorySeparatorChar
@@ -86,67 +87,95 @@ if ($config.DefaultCall) {
 
 }
 
-Write-Host `n"Attempting to import log data from [$wsjtxLogPath]..."`n -ForegroundColor Green -BackgroundColor Black
+Write-HostForScript -Message "Attempting to import log data from [$wsjtxLogPath]..."
 
 $logData = Import-WsjtxLog -LogPath $wsjtxLogPath
 
-#We will work with this later if we need to
-$processed = Invoke-ProcessedLog -Action Get -FilePath $processedPath 
-
-$processed
-break
-
 if ($logData) {
-
-    Write-Host `n"Log information imported!"`n
     
-    $myCallData    = Invoke-CallSignLookup -CallSign $DefaultCall
+    Write-HostForScript -Message "Attempting to import processed data from [$processedPath]..."
+    Write-HostForScript -Message "Looking up call sign information for [$($DefaultCall)]..."
+
+    $processed  = Invoke-ProcessedLog -Action Get -FilePath $processedPath     
+    $myCallData = Invoke-CallSignLookup -CallSign $DefaultCall    
+    $myLocation = Get-AzureMapsInfo -RequestData "$($myCallData.Addy) $($myCallData.Zip)" -RequestType 'Search'
+
+    while ($true) {
+
+        $fromToday = $logData | Where-Object {
+
+            [DateTime]$_.WorkedDate -ge [DateTime]::Now.AddDays(-30).ToString("yyyy-MM-dd")
     
-    $myLocation    = Get-AzureMapsInfo -RequestData "$($myCallData.Addy) $($myCallData.Zip)" -RequestType 'Search'
+        }
+          
+        foreach ($contact in $fromToday) {
+    
+            $theirCallInfo  = $null
+            $pinData        = $null
+            $theirLocation  = $null
+            $guid           = $null
+            $dateTimeWorked = $null
 
-    $fromToday = $logData | Where-Object {
-
-        [DateTime]$_.WorkedDate -ge [DateTime]::Now.AddDays(-30).ToString("yyyy-MM-dd")
-
-    }
-      
-    foreach ($contact in $fromToday) {
-
-        $theirCallInfo = $null
-        $pinData       = $null
-        $theirLocation = $null
-
-        $theirCallInfo = Invoke-CallSignLookup -CallSign $contact.WorkedCallSign
-        $theirLocation = Get-AzureMapsInfo -RequestData "$($theirCallInfo.Addy) $($theirCallInfo.Zip)" -RequestType 'Search'
-
-        $pinData = [PSCustomObject]@{
-
-            MyCall         = $myCallData.CallSign
-            MyLat          = $myLocation.results[0].position.lat
-            MyLong         = $myLocation.results[0].position.lon
-            TheirCall      = $theirCallInfo.CallSign 
-            TheirLat       = $theirLocation.results[0].position.lat
-            TheirLong      = $theirLocation.results[0].position.lon
-            DateTimeWorked = "$($contact.WorkedDate)$($contact.WorkedTime.Replace(':','-'))"
-            TheirState     = $theirCallInfo.State
-            MyState        = $myCallData.State
+            $dateTimeWorked = "$($contact.WorkedDate)$($contact.WorkedTime.Replace(':','-'))"
+            $guid           = "$($contact.WorkedCallSign)-$($dateTimeWorked)"
             
-        }
+            if ($guid -notin $processed) {
 
-        Write-Verbose ($PinData | Out-String)
-
-        try {
-
-            $result = Get-AzureMapsInfo -RequestType MapPin -PinData $pinData -DefaultCenter  
-
-            Invoke-WebHookSend -PinData $pinData -ContactData $contact -ImagePath $result
+                Write-HostForScript -Message "Looking up call sign information for [$($contact.WorkedCallSign)]..."
+    
+                $theirCallInfo = Invoke-CallSignLookup -CallSign $contact.WorkedCallSign
+                $theirLocation = Get-AzureMapsInfo -RequestData "$($theirCallInfo.Addy) $($theirCallInfo.Zip)" -RequestType 'Search'
                 
+                $pinData = [PSCustomObject]@{
+        
+                    MyCall         = $myCallData.CallSign
+                    MyLat          = $myLocation.results[0].position.lat
+                    MyLong         = $myLocation.results[0].position.lon
+                    TheirCall      = $theirCallInfo.CallSign 
+                    TheirLat       = $theirLocation.results[0].position.lat
+                    TheirLong      = $theirLocation.results[0].position.lon
+                    DateTimeWorked = $dateTimeWorked
+                    TheirState     = $theirCallInfo.State
+                    MyState        = $myCallData.State
+                    
+                }
+        
+                Write-Verbose "Pin data:"
+                Write-Verbose ($PinData | Out-String)
+        
+                try {                            
+                    
+                    Write-HostForScript -Message "Getting map image for contact..."
+    
+                    $result = Get-AzureMapsInfo -RequestType MapPin -PinData $pinData -DefaultCenter  
+        
+                    Write-HostForScript -Message "Attempting to send data to Discord..."
+        
+                    Invoke-WebHookSend -PinData $pinData -ContactData $contact -ImagePath $result
+                        
+                }
+                catch {
+        
+                    $errorMessage = $_.Exception.Message
+                    Write-Error "Error -> [$errorMessage]!"
+        
+                }
+                finally {
+        
+                    $processed = Invoke-ProcessedLog -Action Add -FilePath $processedPath -Guid $guid                    
+                    $logData   = Import-WsjtxLog -LogPath $wsjtxLogPath
+
+                    Start-Sleep -Second 5
+        
+                }                                        
+            } else {
+
+                $processed  = Invoke-ProcessedLog -Action Get -FilePath $processedPath                  
+                $logData    = Import-WsjtxLog -LogPath $wsjtxLogPath
+
+                Start-Sleep -Second 1
+
+            }
         }
-        catch {
-
-            $errorMessage = $_.Exception.Message
-            Write-Error "Error -> [$errorMessage]!"
-
-        }        
-    }
+    }    
  }

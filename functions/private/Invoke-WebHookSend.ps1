@@ -20,10 +20,12 @@ function Invoke-WebHookSend {
     )
 
     begin {
+
         $thumbUrl = 'https://static1.squarespace.com/static/5644323de4b07810c0b6db7b/t/5aa44874e4966bde3633b69c/1520715914043/webhook_resized.png'
 
         $title   = "New FT8 contact [$($PinData.MyCall)] <-> [$($PinData.TheirCall)]"
         $details = "New contact! Check out the map below!"
+
     }
 
     process {
@@ -70,8 +72,8 @@ function Invoke-WebHookSend {
             )
         )
     
-        Invoke-PSDsHook -EmbedObject $embedBuilder
+        Invoke-PSDsHook -EmbedObject $embedBuilder | Out-Null
     
-        Invoke-PSDsHook -FilePath $ImagePath      
+        Invoke-PSDsHook -FilePath $ImagePath | Out-Null      
     }            
 }

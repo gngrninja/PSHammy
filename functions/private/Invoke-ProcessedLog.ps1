@@ -15,7 +15,13 @@ function Invoke-ProcessedLog {
             Mandatory
         )]
         [string]
-        $FilePath
+        $FilePath,
+
+        [Parameter(
+
+        )]
+        [string]
+        $Guid
     )
 
     begin {
@@ -26,7 +32,25 @@ function Invoke-ProcessedLog {
 
     process {
 
-        $processedLog = Get-Content -Path $FilePath | ConvertFrom-Json
+        switch ($Action) {
+
+            'Get' {
+
+                $processedLog = Get-Content -Path $FilePath | ConvertFrom-Json
+
+            }
+            'Add' {
+                
+                $processedLog = Get-Content -Path $FilePath | ConvertFrom-Json
+
+                $processedLog += $Guid
+
+                $processedLog | ConvertTo-Json | Out-File -Path $FilePath
+
+                $processedLog = Get-Content -Path $FilePath | ConvertFrom-Json
+
+            }
+        }
         
     }
 
