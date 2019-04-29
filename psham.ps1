@@ -104,7 +104,7 @@ if ($logData) {
 
         $fromToday = $logData | Where-Object {
 
-            [DateTime]$_.WorkedDate -ge [DateTime]::Now.AddDays(-30).ToString("yyyy-MM-dd")
+            [DateTime]$_.WorkedDate -ge [DateTime]::Now.ToString("yyyy-MM-dd")
     
         }
           
