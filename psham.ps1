@@ -1,4 +1,3 @@
-using module PSDsHook
 [cmdletbinding()]
 param(
     [Parameter(
@@ -7,10 +6,62 @@ param(
     $DefaultCall 
 )
 
+[char]$script:seperator  = $null
+[string]$userDir         = $null
+[string]$wsjtxLogPath    = $null
+[string]$inputPath       = $null
+[string]$hammyConfigPath = $null
+[string]$processedPath   = $null
+
+#Get OS specific information
+$script:separator = [IO.Path]::DirectorySeparatorChar
+
+$inputPath       = "$PSScriptRoot$($separator)input"
+$processedPath   = "$inputPath$($separator)processed.json" 
+$hammyConfigPath = "$inputPath$($separator)config.json"
+
+#Set base user directory
+switch ($PSVersionTable.PSEdition) {
+
+    'Desktop' {
+
+        $userDir = $env:USERPROFILE
+
+    }
+
+    'Core' {
+
+        switch ($PSVersionTable.Platform) {
+
+            'Win32NT' {
+        
+                $userDir = $env:USERPROFILE
+
+                $wsjtxLogPath = "$($userDir)$($separator)AppData$($separator)Local$($separator)WSJT-X$($separator)wsjtx.log"
+        
+            }
+        
+            'Unix' {
+        
+                $userDir = $env:HOME
+
+                $wsjtxLogPath = "$($userDir)$($separator).local$($separator)share$($separator)WSJT-X$($separator)wsjtx.log"
+        
+            }
+        }
+
+    }
+}
+
+if (!(Test-Path -Path $wsjtxLogPath -ErrorAction SilentlyContinue)) {
+
+    throw "Unable to access -> [$wsjtxLogPath], cannot continue!"
+
+}
+
 #import functions
 $Public  = @( Get-ChildItem -Path "$PSScriptRoot\functions\public\*.ps1" )
 $Private = @( Get-ChildItem -Path "$PSScriptRoot\functions\private\*.ps1" )
-
 
 @($Public + $Private) | ForEach-Object {
 
@@ -27,7 +78,7 @@ $Private = @( Get-ChildItem -Path "$PSScriptRoot\functions\private\*.ps1" )
 
 }
 
-$config = Import-Config -Path "$PSScriptRoot/config.json"
+$config = Import-Config -Path $hammyConfigPath
 
 if ($config.DefaultCall) {
 
@@ -35,14 +86,22 @@ if ($config.DefaultCall) {
 
 }
 
-$logData = Import-WsjtxLog
-$processed = Invoke-ProcessedLog -Action Get 
+Write-Host `n"Attempting to import log data from [$wsjtxLogPath]..."`n -ForegroundColor Green -BackgroundColor Black
+
+$logData = Import-WsjtxLog -LogPath $wsjtxLogPath
+
+#We will work with this later if we need to
+$processed = Invoke-ProcessedLog -Action Get -FilePath $processedPath 
+
+$processed
+break
 
 if ($logData) {
 
+    Write-Host `n"Log information imported!"`n
+    
     $myCallData    = Invoke-CallSignLookup -CallSign $DefaultCall
     
-
     $myLocation    = Get-AzureMapsInfo -RequestData "$($myCallData.Addy) $($myCallData.Zip)" -RequestType 'Search'
 
     $fromToday = $logData | Where-Object {
@@ -53,13 +112,11 @@ if ($logData) {
       
     foreach ($contact in $fromToday) {
 
-        $embedBuilder  = $null
         $theirCallInfo = $null
-        $details       = $null
-        $title         = $null
+        $pinData       = $null
+        $theirLocation = $null
 
         $theirCallInfo = Invoke-CallSignLookup -CallSign $contact.WorkedCallSign
-
         $theirLocation = Get-AzureMapsInfo -RequestData "$($theirCallInfo.Addy) $($theirCallInfo.Zip)" -RequestType 'Search'
 
         $pinData = [PSCustomObject]@{
@@ -80,59 +137,10 @@ if ($logData) {
 
         try {
 
-            $result = Get-AzureMapsInfo -RequestType MapPin -PinData $pinData -DefaultCenter            
+            $result = Get-AzureMapsInfo -RequestType MapPin -PinData $pinData -DefaultCenter  
 
-            $thumbUrl = 'https://static1.squarespace.com/static/5644323de4b07810c0b6db7b/t/5aa44874e4966bde3633b69c/1520715914043/webhook_resized.png'
-
-            $title   = "New FT8 contact [$($pinData.MyCall)] <-> [$($pinData.TheirCall)]"
-            $details = "New contact! Check out the map below!"
-
-            $embedBuilder = [DiscordEmbed]::new(
-                $title,
-                $details                
-            )
-
-            
-            $embedBuilder.WithColor(
-                [DiscordColor]::New(
-                    'purple'
-                )
-            )
-
-            $embedBuilder.AddField(
-                [DiscordField]::New(
-                    'Received Signal',
-                    "$($contact.ReportedSignalRec)",
-                    $true
-
-                )
-            )
-
-            $embedBuilder.AddField(
-                [DiscordField]::New(
-                    'Sent Signal',
-                    "$($contact.ReportedSignalSent)",
-                    $true
-                )
-            )  
-
-            $embedBuilder.AddField(
-                [DiscordField]::New(
-                    'Time Worked',
-                    "[$($contact.WorkedDate)] [$($contact.WorkedTime)]"
-                )
-            )  
-            $embedBuilder.AddFooter(
-                [DiscordFooter]::New(
-                    "Ham radio is fun! This report was brought to you by PSHammy",
-                    $thumbUrl
-
-                )
-            )
-
-            Invoke-PSDsHook -EmbedObject $embedBuilder
-
-            Invoke-PSDsHook -FilePath $result            
+            Invoke-WebHookSend -PinData $pinData -ContactData $contact -ImagePath $result
+                
         }
         catch {
 

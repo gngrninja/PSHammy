@@ -9,16 +9,24 @@ function Invoke-ProcessedLog {
             'Check',
             'Get'
         )]
-        $Action
+        $Action,
+
+        [Parameter(
+            Mandatory
+        )]
+        [string]
+        $FilePath
     )
 
     begin {
-
-        $processedLog = Get-Content -Path ".\processed.json" | ConvertFrom-Json
+        
+        
 
     }
 
     process {
+
+        $processedLog = Get-Content -Path $FilePath | ConvertFrom-Json
         
     }
 
