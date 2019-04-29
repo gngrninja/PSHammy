@@ -107,7 +107,8 @@ if ($logData) {
             [DateTime]$_.WorkedDate -ge [DateTime]::Now.ToString("yyyy-MM-dd")
     
         }
-          
+        
+        Write-HostForScript -Message "Found [$($fromToday.Count)] log entries..."
         foreach ($contact in $fromToday) {
     
             $theirCallInfo  = $null
@@ -119,8 +120,12 @@ if ($logData) {
             $dateTimeWorked = "$($contact.WorkedDate)$($contact.WorkedTime.Replace(':','-'))"
             $guid           = "$($contact.WorkedCallSign)-$($dateTimeWorked)"
             
-            if ($guid -notin $processed) {
+            Write-Verbose "Working with GUID -> [$($guid)]..."
+            Write-Verbose "Processed:"
+            Write-Verbose  ($processed| out-string)
 
+            if ($guid -notin $processed) {
+                
                 Write-HostForScript -Message "Looking up call sign information for [$($contact.WorkedCallSign)]..."
     
                 $theirCallInfo = Invoke-CallSignLookup -CallSign $contact.WorkedCallSign
@@ -134,6 +139,7 @@ if ($logData) {
                     TheirCall      = $theirCallInfo.CallSign 
                     TheirLat       = $theirLocation.results[0].position.lat
                     TheirLong      = $theirLocation.results[0].position.lon
+                    Frequency      = $contact.Frequency
                     DateTimeWorked = $dateTimeWorked
                     TheirState     = $theirCallInfo.State
                     MyState        = $myCallData.State
@@ -165,7 +171,7 @@ if ($logData) {
                     $processed = Invoke-ProcessedLog -Action Add -FilePath $processedPath -Guid $guid                    
                     $logData   = Import-WsjtxLog -LogPath $wsjtxLogPath
 
-                    Start-Sleep -Second 15
+                    Start-Sleep -Second 7
         
                 }                                        
             } else {
@@ -173,7 +179,7 @@ if ($logData) {
                 $processed  = Invoke-ProcessedLog -Action Get -FilePath $processedPath                  
                 $logData    = Import-WsjtxLog -LogPath $wsjtxLogPath
 
-                Start-Sleep -Second 15
+                Start-Sleep -Second 7
 
             }
         }

@@ -24,7 +24,10 @@ function Invoke-WebHookSend {
         $thumbUrl = 'https://static1.squarespace.com/static/5644323de4b07810c0b6db7b/t/5aa44874e4966bde3633b69c/1520715914043/webhook_resized.png'
 
         $title   = "New FT8 contact [$($PinData.MyCall)] <-> [$($PinData.TheirCall)]"
-        $details = "New contact! Check out the map below!"
+        $details = @"
+New contact on frequency -> [**$([math]::Round($PinData.Frequency, 2))**]Mhz
+See the map below!
+"@  
 
     }
 
@@ -44,7 +47,7 @@ function Invoke-WebHookSend {
         $embedBuilder.AddField(
             [DiscordField]::New(
                 'Received Signal',
-                "$($contactData.ReportedSignalRec)",
+                "From [**$($PinData.TheirState)**] -> *$($contactData.ReportedSignalRec)*",
                 $true
     
             )
@@ -53,7 +56,7 @@ function Invoke-WebHookSend {
         $embedBuilder.AddField(
             [DiscordField]::New(
                 'Sent Signal',
-                "$($contactData.ReportedSignalSent)",
+                "To [**$($PinData.MyState)**] -> *$($contactData.ReportedSignalSent)*",
                 $true
             )
         )  
@@ -61,9 +64,16 @@ function Invoke-WebHookSend {
         $embedBuilder.AddField(
             [DiscordField]::New(
                 'Time Worked',
-                "[$($contactData.WorkedDate)] [$($contactData.WorkedTime)]"
+                "[**$($contactData.WorkedDate)**] @ [**$($contactData.WorkedTime)**]"
             )
         )  
+
+        $embedBuilder.AddThumbnail(
+            [DiscordThumbnail]::New(                
+                "http://clipartmag.com/images/radio-clipart-3.jpg"
+            )
+        )
+
         $embedBuilder.AddFooter(
             [DiscordFooter]::New(
                 "Ham radio is fun! This report was brought to you by PSHammy",
@@ -73,7 +83,7 @@ function Invoke-WebHookSend {
         )
     
         Invoke-PSDsHook -EmbedObject $embedBuilder | Out-Null
-    
+        Start-Sleep -Second 1
         Invoke-PSDsHook -FilePath $ImagePath | Out-Null      
     }            
 }

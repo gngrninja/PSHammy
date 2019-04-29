@@ -24,9 +24,7 @@ function Invoke-ProcessedLog {
         $Guid
     )
 
-    begin {
-        
-        
+    begin {                
 
     }
 
