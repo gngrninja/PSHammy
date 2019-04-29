@@ -165,7 +165,7 @@ if ($logData) {
                     $processed = Invoke-ProcessedLog -Action Add -FilePath $processedPath -Guid $guid                    
                     $logData   = Import-WsjtxLog -LogPath $wsjtxLogPath
 
-                    Start-Sleep -Second 5
+                    Start-Sleep -Second 15
         
                 }                                        
             } else {
@@ -173,7 +173,7 @@ if ($logData) {
                 $processed  = Invoke-ProcessedLog -Action Get -FilePath $processedPath                  
                 $logData    = Import-WsjtxLog -LogPath $wsjtxLogPath
 
-                Start-Sleep -Second 1
+                Start-Sleep -Second 15
 
             }
         }
