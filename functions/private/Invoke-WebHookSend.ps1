@@ -34,7 +34,7 @@ See the map below!
 
     process {
 
-        $embedBuilder = [DiscordEmbed]::new(
+        $embedBuilder = [DiscordEmbed]::New(
             $title,
             $details                
         )
@@ -129,7 +129,7 @@ See the map below!
         } else {
 
             Write-HostForScript -Message "Keeping [$($ImagePath)]..."
-            
+
         }
     }            
 }
