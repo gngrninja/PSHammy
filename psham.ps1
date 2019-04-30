@@ -10,10 +10,12 @@ param(
 [string]$processedPath   = $null
 [array]$processed        = $null
 [string]$wsjtxConfigPath = $null
+[string]$outputPath      = $null
 
 #Get OS specific information
 $script:separator = [IO.Path]::DirectorySeparatorChar
 $inputPath        = "$PSScriptRoot$($separator)input"
+$outputPath       = "$PSScriptRoot$($separator)output"
 $processedPath    = "$inputPath$($separator)processed.json" 
 $hammyConfigPath  = "$inputPath$($separator)config.json"
 
@@ -89,6 +91,14 @@ if (!(Test-Path -Path $inputPath -ErrorAction SilentlyContinue)) {
     Write-HostForScript -Message "Path [$inputPath] does not exist... creating!"
 
     New-Item -Path $inputPath -ItemType Directory | Out-Null
+
+}
+
+if (!(Test-Path -Path $outputPath -ErrorAction SilentlyContinue)) {
+
+    Write-HostForScript -Message "Path [$outputPath] does not exist... creating!"
+
+    New-Item -Path $outputPath -ItemType Directory | Out-Null
 
 }
 

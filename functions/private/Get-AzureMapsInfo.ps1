@@ -106,9 +106,9 @@ function Get-AzureMapsInfo {
                 
                 Write-Verbose "Request URL -> [$baseUrl]"
                 
-                Invoke-RestMethod -Uri $baseUrl -Headers $headers -OutFile ".\output\$($PinData.TheirCall)$($PinData.DateTimeWorked).png"
+                Invoke-RestMethod -Uri $baseUrl -Headers $headers -OutFile "$($outputPath)$($separator)$($PinData.TheirCall)$($PinData.DateTimeWorked).png"
 
-                $response = (Get-ChildItem -Path ".\output\$($PinData.TheirCall)$($PinData.DateTimeWorked).png" | Select-Object -ExpandProperty FullName)                
+                $response = (Get-ChildItem -Path "$($outputPath)$($separator)$($PinData.TheirCall)$($PinData.DateTimeWorked).png" | Select-Object -ExpandProperty FullName)                
 
             }
 
