@@ -1,5 +1,10 @@
 [cmdletbinding()]
 param(
+    [Parameter(
+
+    )]
+    [switch]
+    $DoNotAutoDeleteImages
 )
 
 [char]$script:seperator  = $null
@@ -50,7 +55,6 @@ switch ($PSVersionTable.PSEdition) {
         
             }
         }
-
     }
 }
 

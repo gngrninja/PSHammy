@@ -1,7 +1,6 @@
 Function Get-IniContent {        
     [cmdletbinding()]  
-    param(  
-        [ValidateNotNullOrEmpty()]          
+    param(                    
         [Parameter(
             ValueFromPipeline,
             Mandatory
@@ -12,18 +11,21 @@ Function Get-IniContent {
     begin {
 
         if (
-            !(Test-Path -Path $FilePath -ErrorAction SilentlyContinue) -or 
-            ((Get-Item -Path $FilePath | Select-Object -ExpandProperty Extension) -ne '.ini')
+            !(
+                Test-Path -Path $FilePath -ErrorAction SilentlyContinue
+            ) -or 
+            (
+                (Get-Item -Path $FilePath | Select-Object -ExpandProperty Extension) -ne '.ini'
+            )
         ) {
 
             throw "Unable to access [$FilePath], or not an ini file!"
 
         }
-
     } 
           
-    process  
-    {                        
+    process  {                        
+        
         $iniContents = [PSCustomObject]@{}
 
         switch -File $FilePath -Regex {  
@@ -34,29 +36,28 @@ Function Get-IniContent {
                 $section = $matches[1]  
 
                 $iniContents | Add-Member -Name $section -MemberType NoteProperty -Value ([PSCustomObject]@{})
-                #$ini[$section] = @{}  
+                
                 $CommentCount = 0  
-
             }  
 
             # comment regex
             '^(;.*)$' {  
-                if (!($section))  
-                {  
+                if (!($section)) {  
+
                     $section = "sectionless"
                     $iniContents | Add-Member -Name $section -MemberType NoteProperty -Value ([PSCustomObject]@{})
-                    #$ini[$section] = @{}  
+
                 }  
-                $value = $matches[1]  
-                $CommentCount = $CommentCount + 1  
-                $name = "Comment" + $CommentCount  
+
+                $value        = $matches[1]  
+                $commentCount = $commentCount + 1  
+                $name         = "Comment $($commentCount)"
+
                 $iniContents.$section | Add-Member -Name $name -MemberType NoteProperty -Value $value
-                #$iniContents.$section.$name = $value
-                #$ini.$section | [$name] = $value  
             }  
 
-            # key regex
-            "(.+?)\s*=\s*(.*)" {
+            # key pair regex
+            '(.+?)\s*=\s*(.*)' {
                 
                 if (!($section)) { 
                   
@@ -70,7 +71,6 @@ Function Get-IniContent {
 
                 $iniContents.$section | Add-Member -Name $name -MemberType NoteProperty -Value $value
                 $iniContents.$section.$name = $value
-                #$ini[$section][$name] = $value  
             }  
         }                     
     }  

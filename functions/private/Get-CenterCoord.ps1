@@ -52,5 +52,6 @@ function Get-CenterCoord {
         }
 
         return $returnObject
+        
     }    
 }

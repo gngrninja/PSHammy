@@ -25,7 +25,7 @@ function Invoke-WebHookSend {
 
         $title   = "New [$($ContactData.Mode)] contact [$($PinData.MyCall)] <-> [$($PinData.TheirCall)]"
         $details = @"
-New contact on frequency -> [**$([math]::Round($PinData.Frequency, 2))**]Mhz
+New contact.
 
 See the map below!
 "@  
@@ -46,6 +46,13 @@ See the map below!
             )
         )
     
+        $embedBuilder.AddField(
+            [DiscordField]::New(
+                'Frequency',
+                $([math]::Round($PinData.Frequency, 2))
+            )
+        )
+
         $embedBuilder.AddField(
             [DiscordField]::New(
                 'Received Signal',
@@ -112,6 +119,17 @@ See the map below!
     
         Invoke-PSDsHook -EmbedObject $embedBuilder | Out-Null
         Start-Sleep -Second 1
-        Invoke-PSDsHook -FilePath $ImagePath | Out-Null      
+        Invoke-PSDsHook -FilePath $ImagePath | Out-Null  
+
+        if (!$DoNotAutoDeleteImages) {
+
+            Write-HostForScript -Message "Removing [$($ImagePath)]..."
+            Remove-Item -Path $ImagePath -Force   
+
+        } else {
+
+            Write-HostForScript -Message "Keeping [$($ImagePath)]..."
+            
+        }
     }            
 }
