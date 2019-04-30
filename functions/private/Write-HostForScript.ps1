@@ -8,8 +8,10 @@ function Write-HostForScript {
     )
 
     begin {
+
         $defaultForeground = 'Green'
         $defaultBackground = 'Black'
+        
     }
     
     process {

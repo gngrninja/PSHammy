@@ -26,6 +26,12 @@ function Get-AzureMapsInfo {
         [Parameter(
 
         )]
+        [switch]
+        $FindCenter,
+
+        [Parameter(
+
+        )]
         $PinData
     )
 
@@ -46,14 +52,11 @@ function Get-AzureMapsInfo {
 
             'MapPin' {
 
-                if ($DefaultCenter) {
+                if ($FindCenter) {
                     
-                    $center = "-98.57,39.82"
-                    $DefaultZoom = '2'
-
                     if ($PinData) {
 
-                        $getCenter = Get-CenterCoord $PinData
+                        $getCenter = Get-CenterCoord -Coords $PinData
                         $center    = "$($getCenter.CentralLong),$($getCenter.CentralLat)"  
 
                         $centerDif = $getCenter.CentralLong - $PinData.MyLong

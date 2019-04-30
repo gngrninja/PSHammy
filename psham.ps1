@@ -1,9 +1,5 @@
 [cmdletbinding()]
 param(
-    [Parameter(
-        
-    )]
-    $DefaultCall 
 )
 
 [char]$script:seperator  = $null
@@ -13,13 +9,13 @@ param(
 [string]$hammyConfigPath = $null
 [string]$processedPath   = $null
 [array]$processed        = $null
+[string]$wsjtxConfigPath = $null
 
 #Get OS specific information
 $script:separator = [IO.Path]::DirectorySeparatorChar
-
-$inputPath       = "$PSScriptRoot$($separator)input"
-$processedPath   = "$inputPath$($separator)processed.json" 
-$hammyConfigPath = "$inputPath$($separator)config.json"
+$inputPath        = "$PSScriptRoot$($separator)input"
+$processedPath    = "$inputPath$($separator)processed.json" 
+$hammyConfigPath  = "$inputPath$($separator)config.json"
 
 #Set base user directory
 switch ($PSVersionTable.PSEdition) {
@@ -38,7 +34,8 @@ switch ($PSVersionTable.PSEdition) {
         
                 $userDir = $env:USERPROFILE
 
-                $wsjtxLogPath = "$($userDir)$($separator)AppData$($separator)Local$($separator)WSJT-X$($separator)wsjtx.log"
+                $wsjtxLogPath    = "$($userDir)$($separator)AppData$($separator)Local$($separator)WSJT-X$($separator)wsjtx.log"
+                $wsjtxConfigPath = "$($userDir)$($separator)AppData$($separator)Local$($separator)WSJT-X$($separator)WSJT-X.ini"
         
             }
         
@@ -46,7 +43,8 @@ switch ($PSVersionTable.PSEdition) {
         
                 $userDir = $env:HOME
 
-                $wsjtxLogPath = "$($userDir)$($separator).local$($separator)share$($separator)WSJT-X$($separator)wsjtx.log"
+                $wsjtxLogPath    = "$($userDir)$($separator).local$($separator)share$($separator)WSJT-X$($separator)wsjtx.log"
+                $wsjtxConfigPath = "$($userDir)$($separator).local$($separator)share$($separator)WSJT-X$($separator)WSJT-X.ini"
         
             }
         }
@@ -57,6 +55,12 @@ switch ($PSVersionTable.PSEdition) {
 if (!(Test-Path -Path $wsjtxLogPath -ErrorAction SilentlyContinue)) {
 
     throw "Unable to access -> [$wsjtxLogPath], cannot continue!"
+
+}
+
+if (!(Test-Path -Path "$PSScriptRoot\functions\public" -ErrorAction SilentlyContinue)) {
+
+    New-Item -Path "$PSScriptRoot\functions\public\" -ItemType Directory | Out-Null
 
 }
 
@@ -79,13 +83,48 @@ $Private = @( Get-ChildItem -Path "$PSScriptRoot\functions\private\*.ps1" )
 
 }
 
-$config = Import-Config -Path $hammyConfigPath
+#Folder/file creation for input (config and processed list)
+if (!(Test-Path -Path $inputPath -ErrorAction SilentlyContinue)) {
 
-if ($config.DefaultCall) {
+    Write-HostForScript -Message "Path [$inputPath] does not exist... creating!"
 
-    $DefaultCall = $config.DefaultCall
+    New-Item -Path $inputPath -ItemType Directory | Out-Null
 
 }
+
+if (!(Test-Path -Path $processedPath -ErrorAction SilentlyContinue)) {
+
+    Write-HostForScript -Message "Path [$processedPath] does not exist... creating!"
+    New-Item -Path $processedPath -ItemType File | Out-Null
+
+    @('ZZ0ZZ-01-01-01-01-01-01','ZZ0ZZ-01-01-01-01-01-01') | ConvertTo-Json | Out-File -FilePath $processedPath
+
+}
+
+if (!(Test-Path -Path $hammyConfigPath -ErrorAction SilentlyContinue)) {
+
+    Write-HostForScript -Message "Creating [$hammyConfigPath]"
+    New-Item -Path $hammyConfigPath -ItemType File | Out-Null
+
+    @{'AzureMapsApiKey'=''} | ConvertTo-Json | Out-File -FilePath $hammyConfigPath
+
+    Write-HostForScript "Configuration file created at -> [$hammyConfigPath]... please input your Azure Maps API key..."
+
+    break
+
+}
+
+$config      = Import-Config -Path $hammyConfigPath
+$wsjtxConfig = Get-IniContent -FilePath $wsjtxConfigPath
+
+#Get call sign from wsjtx config
+if ($wsjtxConfig) {
+
+    $DefaultCall = $wsjtxConfig.Configuration.MyCall
+
+}
+
+Write-HostForScript -Message "Imported call sign [$DefaultCall] from WSJT-X.ini..."
 
 Write-HostForScript -Message "Attempting to import log data from [$wsjtxLogPath]..."
 
@@ -105,6 +144,7 @@ if ($logData) {
     
     $myLocation = Get-AzureMapsInfo -RequestType 'Search' -RequestData $lookupAddy
 
+    #As job
     while ($true) {
 
         $fromToday = $logData | Where-Object {
@@ -153,6 +193,9 @@ if ($logData) {
                     DateTimeWorked = $dateTimeWorked
                     TheirState     = $theirCallInfo.State
                     MyState        = $myCallData.State
+                    MyRig          = $wsjtxConfig.Configuration.Rig
+                    MyGrid         = $wsjtxConfig.Configuration.MyGrid
+                    TheirGrid      = $contact.GridSquare
                     
                 }
         
@@ -163,7 +206,7 @@ if ($logData) {
                     
                     Write-HostForScript -Message "Getting map image for contact..."
     
-                    $result = Get-AzureMapsInfo -RequestType MapPin -PinData $pinData -DefaultCenter  
+                    $result = Get-AzureMapsInfo -RequestType MapPin -PinData $pinData -FindCenter  
         
                     Write-HostForScript -Message "Attempting to send data to Discord..."
         
