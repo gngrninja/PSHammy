@@ -93,12 +93,17 @@ $logData = Import-WsjtxLog -LogPath $wsjtxLogPath
 
 if ($logData) {
     
+    $lookupAddy = $null
+
     Write-HostForScript -Message "Attempting to import processed data from [$processedPath]..."
     Write-HostForScript -Message "Looking up call sign information for [$($DefaultCall)]..."
 
     $processed  = Invoke-ProcessedLog -Action Get -FilePath $processedPath     
     $myCallData = Invoke-CallSignLookup -CallSign $DefaultCall    
-    $myLocation = Get-AzureMapsInfo -RequestData "$($myCallData.Addy) $($myCallData.Zip)" -RequestType 'Search'
+
+    $lookupAddy = "$($myCallData.Addy) $($myCallData.AddyTwo) $($myCallData.State) $($myCallData.Zip)"
+    
+    $myLocation = Get-AzureMapsInfo -RequestType 'Search' -RequestData $lookupAddy
 
     while ($true) {
 
@@ -109,6 +114,7 @@ if ($logData) {
         }
         
         Write-HostForScript -Message "Found [$($fromToday.Count)] log entries..."
+
         foreach ($contact in $fromToday) {
     
             $theirCallInfo  = $null
@@ -116,6 +122,7 @@ if ($logData) {
             $theirLocation  = $null
             $guid           = $null
             $dateTimeWorked = $null
+            $lookupAddy     = $null
 
             $dateTimeWorked = "$($contact.WorkedDate)$($contact.WorkedTime.Replace(':','-'))"
             $guid           = "$($contact.WorkedCallSign)-$($dateTimeWorked)"
@@ -129,7 +136,10 @@ if ($logData) {
                 Write-HostForScript -Message "Looking up call sign information for [$($contact.WorkedCallSign)]..."
     
                 $theirCallInfo = Invoke-CallSignLookup -CallSign $contact.WorkedCallSign
-                $theirLocation = Get-AzureMapsInfo -RequestData "$($theirCallInfo.Addy) $($theirCallInfo.Zip)" -RequestType 'Search'
+
+                $lookupAddy = "$($theirCallInfo.Addy) $($theirCallInfo.AddyTwo) $($theirCallInfo.State) $($theirCallInfo.Zip)"
+
+                $theirLocation = Get-AzureMapsInfo -RequestData $lookupAddy -RequestType 'Search'
                 
                 $pinData = [PSCustomObject]@{
         
@@ -179,7 +189,7 @@ if ($logData) {
                 $processed  = Invoke-ProcessedLog -Action Get -FilePath $processedPath                  
                 $logData    = Import-WsjtxLog -LogPath $wsjtxLogPath
 
-                Start-Sleep -Second 7
+                Start-Sleep -Second 2
 
             }
         }

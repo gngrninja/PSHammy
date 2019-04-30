@@ -74,18 +74,18 @@ function Get-AzureMapsInfo {
 
                             }
 
-                            {($centerDif) -gt 2 -and ($centerDif -lt 4)} {
+                            {($centerDif) -gt 2 -and ($centerDif -lt 10)} {
 
                                 $DefaultZoom = '4'
 
                             }
 
-                            {($centerDif -gt 9) -and ($centerDif -lt 17)} {
+                            {($centerDif -gt 10) -and ($centerDif -lt 20)} {
 
-                                $DefaultZoom = '4'  
+                                $DefaultZoom = '3'  
                             }
 
-                            {$centerDif -gt 17} {
+                            {$centerDif -gt 20} {
 
                                 $DefaultZoom = '2'
                             }
@@ -100,7 +100,7 @@ function Get-AzureMapsInfo {
                 }
                                 
                 $baseUrl = "$($prefix)/map/static/png?api-version=1.0&center=$($center)&pins=default%7CcoFF1493%7C%7C'$($PinData.MyCall)'$($PinData.MyLong)%20$($PinData.MyLat)%7C'$($PinData.TheirCall)'$($PinData.TheirLong)%20$($PinData.TheirLat)&zoom=$($DefaultZoom)&layer=basic"
-                #%7Cla5%204
+                
                 Write-Verbose "Request URL -> [$baseUrl]"
                 
                 Invoke-RestMethod -Uri $baseUrl -Headers $headers -OutFile ".\output\$($PinData.TheirCall)$($PinData.DateTimeWorked).png"
