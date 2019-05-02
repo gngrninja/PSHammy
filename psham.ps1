@@ -158,7 +158,7 @@ if (!(Test-Path -Path $hammyConfigPath -ErrorAction SilentlyContinue)) {
     #Info template for config file
     @{
         'AzureMapsApiKey' = ''
-        'QrzSessionKey'   = ''
+        'QRZApiKey'       = ''        
     } | ConvertTo-Json | Out-File -FilePath $hammyConfigPath
 
     Write-HostForScript "Configuration file created at -> [$hammyConfigPath]... please input your Azure Maps API key..."
@@ -167,8 +167,9 @@ if (!(Test-Path -Path $hammyConfigPath -ErrorAction SilentlyContinue)) {
 
 }
 
-$script:config      = Import-Config -Path $hammyConfigPath
-$wsjtxConfig = Get-IniContent -FilePath $wsjtxConfigPath
+$script:config = Import-Config -Path $hammyConfigPath
+$wsjtxConfig   = Get-IniContent -FilePath $wsjtxConfigPath
+$qrzCreds      = Import-Clixml -Path $qrzCredPath
 
 #Get call sign from wsjtx config
 if ($wsjtxConfig) {
@@ -189,6 +190,20 @@ if ($logData) {
 
     Write-HostForScript -Message "Attempting to import processed data from [$processedPath]..."
     Write-HostForScript -Message "Looking up call sign information for [$($DefaultCall)]..."
+
+    Write-HostForScript -Message "Checking QRZ session status..."
+
+    $result = Get-QrzApiSession -Credential $qrzCreds
+
+    if ($result -eq 'keep') {
+
+        Write-HostForScript -Message "Keeping key for QRZ, as it still works!"
+
+    } else {
+
+        Write-HostForScript -Message "Refreshing QRZ API key, old key does not work!"
+
+    }
 
     $processed  = Invoke-ProcessedLog -Action Get -FilePath $processedPath     
     $myCallData = Invoke-CallSignLookup -CallSign $DefaultCall    

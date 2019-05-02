@@ -35,7 +35,8 @@ function Get-QrzApiSession {
         } else {
 
             Write-Verbose "Key works fine!"
-            break
+
+            return "keep"
 
         }
     }
@@ -54,6 +55,8 @@ function Get-QrzApiSession {
 
             $script:config = Get-Content -Path $hammyConfigPath | ConvertFrom-Json
 
-        } 
+            return "change"
+
+        }         
     }
 }
