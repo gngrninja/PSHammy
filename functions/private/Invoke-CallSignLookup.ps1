@@ -8,7 +8,7 @@ function Invoke-CallSignLookup {
         [Parameter(
 
         )]
-        [ValidateSet('HamDb','callook')]
+        [ValidateSet('HamDb','callook','Qrz')]
         $Api = 'HamDb'
     )
 
@@ -26,6 +26,13 @@ function Invoke-CallSignLookup {
 
                 $url = "https://callook.info/$($CallSign)/json"
 
+            }
+
+            'Qrz' {
+
+                $getSessionUrl = ''
+                $lookupUrl     = ''
+                
             }
 
         }

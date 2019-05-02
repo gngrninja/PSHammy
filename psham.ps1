@@ -111,6 +111,7 @@ if (!(Test-Path -Path $processedPath -ErrorAction SilentlyContinue)) {
     Write-HostForScript -Message "Path [$processedPath] does not exist... creating!"
     New-Item -Path $processedPath -ItemType File | Out-Null
 
+    #Info template for processed calls
     @('ZZ0ZZ-01-01-01-01-01-01','ZZ0ZZ-01-01-01-01-01-01') | ConvertTo-Json | Out-File -FilePath $processedPath
 
 }
@@ -120,7 +121,11 @@ if (!(Test-Path -Path $hammyConfigPath -ErrorAction SilentlyContinue)) {
     Write-HostForScript -Message "Creating [$hammyConfigPath]"
     New-Item -Path $hammyConfigPath -ItemType File | Out-Null
 
-    @{'AzureMapsApiKey'=''} | ConvertTo-Json | Out-File -FilePath $hammyConfigPath
+    #Info template for config file
+    @{
+        'AzureMapsApiKey' = ''
+        'QrzSessionKey'   = ''
+    } | ConvertTo-Json | Out-File -FilePath $hammyConfigPath
 
     Write-HostForScript "Configuration file created at -> [$hammyConfigPath]... please input your Azure Maps API key..."
 
