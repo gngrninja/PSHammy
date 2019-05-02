@@ -33,6 +33,9 @@ switch ($PSVersionTable.PSEdition) {
 
         $userDir = $env:USERPROFILE
 
+        $wsjtxLogPath    = "$($userDir)$($separator)AppData$($separator)Local$($separator)WSJT-X$($separator)wsjtx.log"
+        $wsjtxConfigPath = "$($userDir)$($separator)AppData$($separator)Local$($separator)WSJT-X$($separator)WSJT-X.ini"
+
     }
 
     'Core' {
