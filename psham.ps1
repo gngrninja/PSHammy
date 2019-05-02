@@ -16,6 +16,7 @@ param(
 [array]$processed        = $null
 [string]$wsjtxConfigPath = $null
 [string]$outputPath      = $null
+[string]$qrzCredPath     = $null
 
 #Get OS specific information
 $script:separator = [IO.Path]::DirectorySeparatorChar
@@ -23,6 +24,7 @@ $inputPath        = "$PSScriptRoot$($separator)input"
 $outputPath       = "$PSScriptRoot$($separator)output"
 $processedPath    = "$inputPath$($separator)processed.json" 
 $hammyConfigPath  = "$inputPath$($separator)config.json"
+$qrzCredPath      = "$inputPath$($separator)qrzCred.xml"
 
 #Set base user directory
 switch ($PSVersionTable.PSEdition) {
@@ -50,9 +52,17 @@ switch ($PSVersionTable.PSEdition) {
         
                 $userDir = $env:HOME
 
-                $wsjtxLogPath    = "$($userDir)$($separator).local$($separator)share$($separator)WSJT-X$($separator)wsjtx.log"
-                $wsjtxConfigPath = "$($userDir)$($separator).local$($separator)share$($separator)WSJT-X$($separator)WSJT-X.ini"
-        
+                if ($PSVersionTable.OS -match 'Darwin.+') {
+
+                    $wsjtxLogPath    = "$($userDir)$($separator)Library$($separator)Application Support$($separator)WSJT-X$($separator)wsjtx.log"
+                    $wsjtxConfigPath = "$($userDir)$($separator)Library$($separator)Preferences$($separator)WSJT-X.ini"
+                    
+                } else {
+
+                    $wsjtxLogPath    = "$($userDir)$($separator).local$($separator)share$($separator)WSJT-X$($separator)wsjtx.log"
+                    $wsjtxConfigPath = "$($userDir)$($separator).local$($separator)share$($separator)WSJT-X$($separator)WSJT-X.ini"
+
+                }
             }
         }
     }
@@ -98,6 +108,27 @@ if (!(Test-Path -Path $inputPath -ErrorAction SilentlyContinue)) {
 
 }
 
+if (!(Test-Path -Path $qrzCredPath -ErrorAction SilentlyContinue)) {
+
+    Write-HostForScript -Message "Path [$qrzCredPath] does not exist... creating!"
+
+    do {
+
+        Write-HostForScript -Message "QRZ API access is required for this script... your credentials will be used to get the API key"
+        Write-HostForScript -Message "The file path is -> [$($qrzCredPath)]"
+        Write-HostForScript -Message "The password is machine-encrypted"
+
+        (Get-Credential -Message "Please enter your QRZ credentials" ) | Export-Clixml -Path $qrzCredPath -Force 
+
+    } while (
+
+        !(Test-Path -Path $qrzCredPath -ErrorAction SilentlyContinue)
+
+    )
+
+}
+
+
 if (!(Test-Path -Path $outputPath -ErrorAction SilentlyContinue)) {
 
     Write-HostForScript -Message "Path [$outputPath] does not exist... creating!"
@@ -133,7 +164,7 @@ if (!(Test-Path -Path $hammyConfigPath -ErrorAction SilentlyContinue)) {
 
 }
 
-$config      = Import-Config -Path $hammyConfigPath
+$script:config      = Import-Config -Path $hammyConfigPath
 $wsjtxConfig = Get-IniContent -FilePath $wsjtxConfigPath
 
 #Get call sign from wsjtx config
