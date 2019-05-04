@@ -232,6 +232,13 @@ if ($logData) {
     
         }
         
+        if ($fromToday.Count -le 0) {
+
+            Write-HostForScript -Message "No log entries found -> [$($wsjtxLogPath)] -< aborting!"
+            
+            break
+        }
+
         Write-HostForScript -Message "Found [$($fromToday.Count)] log entries..."
 
         foreach ($contact in $fromToday) {
