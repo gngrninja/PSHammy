@@ -208,9 +208,20 @@ if ($logData) {
     $processed  = Invoke-ProcessedLog -Action Get -FilePath $processedPath     
     $myCallData = Invoke-CallSignLookup -CallSign $DefaultCall    
 
-    $lookupAddy = "$($myCallData.Addy) $($myCallData.AddyTwo) $($myCallData.State) $($myCallData.Zip)"
-    
-    $myLocation = Get-AzureMapsInfo -RequestType 'Search' -RequestData $lookupAddy
+    if ($myCallData.lat -and $myCallData.long) {
+
+        $myLat  = $myCallData.lat
+        $myLong = $myCallData.long
+
+    } else {
+
+        $lookupAddy = "$($myCallData.Addy) $($myCallData.AddyTwo) $($myCallData.State) $($myCallData.Zip)"
+        $myLocation = Get-AzureMapsInfo -RequestData $lookupAddy -RequestType 'Search'
+
+        $myLat  = $myLocation.results[0].position.lat
+        $myLong = $myLocation.results[0].position.lon 
+
+    }
 
     #As job
     while ($true) {
@@ -247,10 +258,10 @@ if ($logData) {
     
                 $theirCallInfo = Invoke-CallSignLookup -CallSign $contact.WorkedCallSign
 
-                if ($theirCallInfo.lat -and $theirCallInfo.lon) {
+                if ($theirCallInfo.lat -and $theirCallInfo.long) {
 
                     $theirLat  = $theirCallInfo.lat
-                    $theirLong = $theirCallInfo.lon
+                    $theirLong = $theirCallInfo.long
 
                 } else {
 
@@ -259,13 +270,14 @@ if ($logData) {
 
                     $theirLat  = $theirLocation.results[0].position.lat
                     $theirLong = $theirLocation.results[0].position.lon
+
                 }
                
                 $pinData = [PSCustomObject]@{
         
                     MyCall         = $myCallData.CallSign
-                    MyLat          = $myLocation.results[0].position.lat
-                    MyLong         = $myLocation.results[0].position.lon
+                    MyLat          = $myLat
+                    MyLong         = $myLong
                     TheirCall      = $theirCallInfo.CallSign 
                     TheirLat       = $theirLat
                     TheirLong      = $theirLong
@@ -274,8 +286,10 @@ if ($logData) {
                     TheirState     = $theirCallInfo.State
                     MyState        = $myCallData.State
                     MyRig          = $wsjtxConfig.Configuration.Rig
-                    MyGrid         = $wsjtxConfig.Configuration.MyGrid
-                    TheirGrid      = $contact.GridSquare
+                    MyGrid         = $myCallData.Grid
+                    TheirGrid      = $theirCallInfo.Grid
+                    MyImage        = $myCallData.ProfileImage
+                    TheirImage     = $theirCallInfo.ProfileImage
                     
                 }
         

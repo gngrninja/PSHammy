@@ -21,8 +21,16 @@ function Invoke-WebHookSend {
 
     begin {
 
-        $thumbUrl = 'https://static1.squarespace.com/static/5644323de4b07810c0b6db7b/t/5aa44874e4966bde3633b69c/1520715914043/webhook_resized.png'
+        if ($PinData.TheirImage) {
 
+            $thumbUrl = $PinData.TheirImage
+
+        } else {
+
+            $thumbUrl = "http://clipartmag.com/images/radio-clipart-3.jpg"
+
+        }
+        
         $title   = "New [$($ContactData.Mode)] contact [$($PinData.MyCall)] <-> [$($PinData.TheirCall)]"
         $details = @"
 New contact.
@@ -46,10 +54,28 @@ See the map below!
             )
         )
     
+        if ($PinData.MyImage) {
+            $embedBuilder.AddAuthor(
+                [DiscordAuthor]::New(
+                    $PinData.MyCall,
+                    $PinData.MyImage
+                )
+            )
+        }
+
+        if ($PinData.TheirImage) {
+
+            $embedBuilder.AddImage(
+                [DiscordImage]::New(
+                    $PinData.TheirImage
+                )
+            )
+
+        }
         $embedBuilder.AddField(
             [DiscordField]::New(
                 'Frequency',
-                $([math]::Round($PinData.Frequency, 2))
+                "[$([math]::Round($PinData.Frequency, 2))]Mhz"
             )
         )
 
@@ -93,6 +119,7 @@ See the map below!
                     $true
                 )
             )  
+
         if ($PinData.TheirGrid) {
 
             $embedBuilder.AddField(
@@ -106,7 +133,7 @@ See the map below!
 
         $embedBuilder.AddThumbnail(
             [DiscordThumbnail]::New(                
-                "http://clipartmag.com/images/radio-clipart-3.jpg"
+                $thumbUrl
             )
         )
 
