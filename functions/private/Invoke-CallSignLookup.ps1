@@ -9,7 +9,7 @@ function Invoke-CallSignLookup {
 
         )]
         [ValidateSet('HamDb','callook','Qrz')]
-        $Api = 'HamDb'
+        $Api = 'Qrz'
     )
 
     begin {
@@ -30,8 +30,7 @@ function Invoke-CallSignLookup {
 
             'Qrz' {
 
-                $getSessionUrl = ''
-                $lookupUrl     = ''
+                $url = "https://xmldata.qrz.com/xml/current/?s=$($config.QRZApiKey);callsign=$($CallSign)"
                 
             }
 
@@ -39,19 +38,21 @@ function Invoke-CallSignLookup {
         
         $callSignData = [PSCustomObject]@{
 
-            CallSign  = ''
-            Class     = ''
-            Expires   = ''
-            Status    = ''
-            FirstName = ''
-            Grid      = ''
-            Lat       = ''
-            Long      = ''
-            Country   = '' 
-            Addy      = ''
-            AddyTwo   = '' 
-            State     = ''
-            Zip       = ''
+            CallSign     = ''
+            Class        = ''
+            Expires      = ''
+            Status       = ''
+            FirstName    = ''
+            Grid         = ''
+            Lat          = ''
+            Long         = ''
+            Country      = '' 
+            Addy         = ''
+            AddyTwo      = '' 
+            State        = ''
+            Zip          = ''
+            Views        = ''
+            ProfileImage = ''
 
         }
 
@@ -70,6 +71,7 @@ function Invoke-CallSignLookup {
                     $resultData = $result.hamdb.callsign
 
                     Write-Verbose ($resultData | Out-String)
+
                     #Assign data to object we return
                     $callSignData.CallSign  = $resultData.call
                     $callSignData.Class     = $resultData.class
@@ -87,6 +89,26 @@ function Invoke-CallSignLookup {
                 }
 
                 'calllook' {
+
+                }
+
+                'Qrz' {
+
+                    $callSignData.CallSign     = $resultData.call
+                    $callSignData.Class        = $resultData.class
+                    $callSignData.Expires      = $resultData.expdate
+                    $callSignData.Status       = $resultData.status
+                    $callSignData.Grid         = $resultData.grid
+                    $callSignData.Lat          = $resultData.lat
+                    $callSignData.Long         = $resultData.lon
+                    $callSignData.State        = $resultData.state
+                    $callSignData.Country      = $resultData.country
+                    $callSignData.FirstName    = $resultData.fname 
+                    $callSignData.Addy         = $resultData.addr1
+                    $callSignData.AddyTwo      = $resultData.addr2
+                    $callSignData.Zip          = $resultData.zip
+                    $callSignData.Views        = $resultData.'u_views'
+                    $callSignData.ProfileImage = $resultData.image
 
                 }
             }

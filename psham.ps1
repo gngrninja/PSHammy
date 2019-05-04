@@ -231,6 +231,8 @@ if ($logData) {
             $guid           = $null
             $dateTimeWorked = $null
             $lookupAddy     = $null
+            $theirLat       = $null
+            $theirLong      = $null
 
             $dateTimeWorked = "$($contact.WorkedDate)$($contact.WorkedTime.Replace(':','-'))"
             $guid           = "$($contact.WorkedCallSign)-$($dateTimeWorked)"
@@ -245,18 +247,28 @@ if ($logData) {
     
                 $theirCallInfo = Invoke-CallSignLookup -CallSign $contact.WorkedCallSign
 
-                $lookupAddy = "$($theirCallInfo.Addy) $($theirCallInfo.AddyTwo) $($theirCallInfo.State) $($theirCallInfo.Zip)"
+                if ($theirCallInfo.lat -and $theirCallInfo.lon) {
 
-                $theirLocation = Get-AzureMapsInfo -RequestData $lookupAddy -RequestType 'Search'
-                
+                    $theirLat  = $theirCallInfo.lat
+                    $theirLong = $theirCallInfo.lon
+
+                } else {
+
+                    $lookupAddy = "$($theirCallInfo.Addy) $($theirCallInfo.AddyTwo) $($theirCallInfo.State) $($theirCallInfo.Zip)"
+                    $theirLocation = Get-AzureMapsInfo -RequestData $lookupAddy -RequestType 'Search'
+
+                    $theirLat  = $theirLocation.results[0].position.lat
+                    $theirLong = $theirLocation.results[0].position.lon
+                }
+               
                 $pinData = [PSCustomObject]@{
         
                     MyCall         = $myCallData.CallSign
                     MyLat          = $myLocation.results[0].position.lat
                     MyLong         = $myLocation.results[0].position.lon
                     TheirCall      = $theirCallInfo.CallSign 
-                    TheirLat       = $theirLocation.results[0].position.lat
-                    TheirLong      = $theirLocation.results[0].position.lon
+                    TheirLat       = $theirLat
+                    TheirLong      = $theirLong
                     Frequency      = $contact.Frequency
                     DateTimeWorked = $dateTimeWorked
                     TheirState     = $theirCallInfo.State

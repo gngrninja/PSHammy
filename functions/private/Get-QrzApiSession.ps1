@@ -16,8 +16,10 @@ function Get-QrzApiSession {
     begin {
 
         if ($config.QRZApiKey) {
+
             $sessionCheckUrl = "https://xmldata.qrz.com/xml/current/?s=$($config.QRZApiKey);callsign=kf7ign"
             $sessionCheck    = Invoke-RestMethod -Uri $sessionCheckUrl
+
         }
         
         $fullUrl = "$($Url)/?username=$($Credential.UserName);password=$($Credential.GetNetworkCredential().Password);agent=q5.0"
@@ -29,7 +31,7 @@ function Get-QrzApiSession {
         if ($sessionCheck.QRZDatabase.Session.Error -or !$config.QRZApiKey) {
 
             Write-Verbose "Error in QRZ session check (or no API key yet)... attempting to get a fresh key"
-            
+
             $result = Invoke-RestMethod -Uri $fullUrl -Method Get
 
         } else {
