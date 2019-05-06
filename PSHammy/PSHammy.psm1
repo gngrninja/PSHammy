@@ -1,13 +1,11 @@
 #get OS specific information
 $script:separator        = [IO.Path]::DirectorySeparatorChar
-$script:inputPath        = "$PSScriptRoot$($separator)input"
-$script:outputPath       = "$PSScriptRoot$($separator)output"
-$script:processedPath    = "$inputPath$($separator)processed.json" 
-$script:hammyConfigPath  = "$inputPath$($separator)config.json"
-$script:qrzCredPath      = "$inputPath$($separator)qrzCred.xml"
-[string]$script:userDir  = $null
-[string]$wsjtxLogPath    = $null
-[string]$wsjtxConfigPath = $null
+
+#null out vars used later
+[string]$script:userDir           = $null
+[string]$wsjtxLogPath             = $null
+[string]$wsjtxConfigPath          = $null
+[string]$script:defaultPSHammyDir = $null
 
 #import functions
 $Public  = @( Get-ChildItem -Path "$PSScriptRoot$($separator)functions$($separator)public$($separator)*.ps1" )
@@ -72,3 +70,13 @@ switch ($PSVersionTable.PSEdition) {
         }
     }
 }
+
+#setup folders/paths
+$script:defaultPSHammyDir = (Join-Path -Path $userDir -ChildPath '.psHammy')
+
+$script:inputPath         = "$defaultPSHammyDir$($separator)input"
+$script:outputPath        = "$defaultPSHammyDir$($separator)output"
+
+$script:processedPath     = "$inputPath$($separator)processed.json" 
+$script:hammyConfigPath   = "$inputPath$($separator)config.json"
+$script:qrzCredPath       = "$inputPath$($separator)qrzCred.xml"
