@@ -3,7 +3,7 @@ function Invoke-LogDataGather {
     param(
         
     )
-
+    
     $script:config      = Import-Config -Path $hammyConfigPath
     $script:wsjtxConfig = Get-IniContent -FilePath $wsjtxConfigPath
     $script:qrzCreds    = Import-Clixml -Path $qrzCredPath

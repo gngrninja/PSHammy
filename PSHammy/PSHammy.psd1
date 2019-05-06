@@ -18,7 +18,7 @@ ModuleVersion = '0.1.0'
 # CompatiblePSEditions = @()
 
 # ID used to uniquely identify this module
-GUID = 'abde9c97-3547-45c3-9e29-4ig46n8c288c'
+GUID = 'ca52d058-f212-4aa2-b2a7-9dd8fcf9ed1e'
 
 # Author of this module
 Author = 'Mike Roberts'
@@ -70,7 +70,9 @@ PowerShellVersion = '6.1'
 
 # Functions to export from this module, for best performance, do not use wildcards and do not delete the entry, use an empty array if there are no functions to export.
 FunctionsToExport = @(
-    'Invoke-PSHammy'    
+    'Invoke-PSHammy',
+    'Invoke-LogCheck',
+    'Invoke-LogDataGather'
 )
 
 # Cmdlets to export from this module, for best performance, do not use wildcards and do not delete the entry, use an empty array if there are no cmdlets to export.

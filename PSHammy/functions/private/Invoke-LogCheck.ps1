@@ -70,7 +70,9 @@ function Invoke-LogCheck {
                     Frequency      = $contact.Frequency
                     DateTimeWorked = $dateTimeWorked
                     TheirState     = $theirCallInfo.State
+                    TheirCountry   = $theirCallInfo.Country
                     MyState        = $myCallData.State
+                    MyCountry      = $myCallData.Country
                     MyRig          = $wsjtxConfig.Configuration.Rig
                     MyGrid         = $myCallData.Grid
                     TheirGrid      = $theirCallInfo.Grid

@@ -78,26 +78,27 @@ function Invoke-PSHammy {
         #Info template for config file
         @{
             'AzureMapsApiKey' = ''
-            'QRZApiKey'       = ''        
+            'QRZApiKey'       = ''
+            'FooterTxt'       = ''
+            'DefaultThumbUrl' = ''        
         } | ConvertTo-Json | Out-File -FilePath $hammyConfigPath
     
         Write-HostForScript "Configuration file created at -> [$hammyConfigPath]... please input your Azure Maps API key..."
     
         break
     
-    }        
-        
+    }    
+
     if ($AsJob) {
 
         Start-Job -InitializationScript {
 
-            Import-Module "C:\Users\thegn\repos\PSHammy\PSHammy"            
-            
+            Import-Module "C:\users\thegn\repos\PSHammy\PSHammy"            
 
-        } -ArgumentList $logData, $processed, $myCallData, $myLat, $myLong, $myLocation, $DefaultCall, $config, $wsjtxConfig, $qrzCreds, $DoNotAutoDeleteImages, $hammyConfigPath, $wsjtxConfigPath, $qrzCredPath {
-
+        } {
+            #-ArgumentList $logData, $processed, $myCallData, $myLat, $myLong, $myLocation, $DefaultCall, $config, $wsjtxConfig, $qrzCreds, $DoNotAutoDeleteImages, $hammyConfigPath, $wsjtxConfigPath, $qrzCredPath {
             Invoke-LogDataGather
-            Invoke-LogCheck
+            Invoke-LogCheck -Verbose
 
         }
 

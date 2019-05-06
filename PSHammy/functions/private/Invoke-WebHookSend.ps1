@@ -27,7 +27,7 @@ function Invoke-WebHookSend {
 
         } else {
 
-            $thumbUrl = "http://clipartmag.com/images/radio-clipart-3.jpg"
+            $thumbUrl = $config.DefaultThumbUrl
 
         }
         
@@ -72,56 +72,91 @@ See the map below!
             )
 
         }
-        $embedBuilder.AddField(
-            [DiscordField]::New(
-                'Frequency',
-                "[$([math]::Round($PinData.Frequency, 2))]Mhz"
-            )
-        )
 
-        $embedBuilder.AddField(
-            [DiscordField]::New(
-                'Received Signal',
-                "From [**$($PinData.TheirState)**] -> *$($ContactData.ReportedSignalRec)*",
-                $true
-    
-            )
-        )
-    
-        $embedBuilder.AddField(
-            [DiscordField]::New(
-                'Sent Signal',
-                "To [**$($PinData.MyState)**] -> *$($ContactData.ReportedSignalSent)*",
-                $true
-            )
-        )  
-    
-        $embedBuilder.AddField(
-            [DiscordField]::New(
-                'Time Worked',
-                "[**$($ContactData.WorkedDate)**] @ [**$($ContactData.WorkedTime)**]",
-                $true
-            )
-        )  
+        if ($PinData.Frequency) {
+            $embedBuilder.AddField(
+                [DiscordField]::New(
+                    'Frequency',
+                    "[$([math]::Round($PinData.Frequency, 2))]Mhz"
+                )
+            )    
+        }
 
-        $embedBuilder.AddField(
-            [DiscordField]::New(
-                'My Radio',
-                $PinData.MyRig,
-                $true
-            )
-        )  
+        $receivedFrom = $null            
+        if ($PinData.TheirState) {
 
-        $embedBuilder.AddField(
+            $receivedFrom = $PinData.TheirState
+
+        } else {
+
+            $receivedFrom = $PinData.TheirCountry
+
+        }
+        if ($receivedFrom) {
+            $embedBuilder.AddField(
+           
+                [DiscordField]::New(
+                    'Received Signal',
+                    "From [**$($receivedFrom)**] -> *$($ContactData.ReportedSignalRec)*",
+                    $true
+        
+                )
+            )
+        }
+
+    
+        $sentTo = $null            
+        if ($PinData.MyState) {
+
+            $sentTo = $PinData.MyState
+
+        } else {
+
+            $sentTo = $PinData.MyCountry
+
+        }
+        if ($sentTo) {
+            $embedBuilder.AddField(            
+                [DiscordField]::New(
+                    'Sent Signal',
+                    "To [**$($sentTo)**] -> *$($ContactData.ReportedSignalSent)*",
+                    $true
+                )
+            )  
+        }
+    
+        if ($ContactData.WorkedDate -and $ContactData.WorkedTime) {
+            $embedBuilder.AddField(
+                [DiscordField]::New(
+                    'Time Worked',
+                    "[**$($ContactData.WorkedDate)**] @ [**$($ContactData.WorkedTime)**]",
+                    $true
+                )
+            )  
+        }
+
+        if ($PinData.MyRig) {
+            $embedBuilder.AddField(
+                [DiscordField]::New(
+                    'My Radio',
+                    $PinData.MyRig,
+                    $true
+                )
+            ) 
+        }
+ 
+        if ($PinData.MyGrid) {
+            $embedBuilder.AddField(
                 [DiscordField]::New(
                     'My Grid',
                     $PinData.MyGrid,
                     $true
                 )
             )  
+        }
 
+        
         if ($PinData.TheirGrid) {
-
             $embedBuilder.AddField(
                 [DiscordField]::New(
                     'Their Grid',
@@ -130,7 +165,7 @@ See the map below!
                 )
             )  
         }
-
+        
         $embedBuilder.AddThumbnail(
             [DiscordThumbnail]::New(                
                 $thumbUrl
@@ -139,7 +174,7 @@ See the map below!
 
         $embedBuilder.AddFooter(
             [DiscordFooter]::New(
-                "Ham radio is fun! This report was brought to you by PSHammy",
+                $config.FooterTxt,
                 $thumbUrl    
             )
         )
