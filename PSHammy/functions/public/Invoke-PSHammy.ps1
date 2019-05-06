@@ -1,4 +1,4 @@
-function Invoke-PSHam {
+function Invoke-PSHammy {
     [cmdletbinding()]
     param(
         [Parameter(
