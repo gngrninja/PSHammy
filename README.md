@@ -10,7 +10,7 @@ PSHammy is a module that interprets WSJT-X's log file, and posts contacts to a D
 
 - For map imaging this module uses the Azure Maps API. You'll need to get yourself an [Azure Maps API key](https://azure.microsoft.com/en-us/pricing/details/azure-maps/). 
 
-- You can use call sign lookup services that are free with this module, but it works best if you have a subscription to QRZ's API. You can find that, [here](https://ssl.qrz.com/products/index.html).
+- You can use call sign lookup services that are free with this module, but it works best if you have a subscription to QRZ's API. You can find that, [here](https://ssl.qrz.com/products/index.html). Most free call lookup APIs do not work so well with international call signs.
 
 ### Setting up the webhook
 - Install PSDSHook if you have not already. You can install it via the PowerShell Gallery. Check out the instructions, [here](https://github.com/gngrninja/PSDsHook).

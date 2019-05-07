@@ -126,7 +126,7 @@ function Invoke-PSHammy {
             'QRZApiKey'       = ''
             'FooterTxt'       = ''
             'DefaultThumbUrl' = ''
-            'CallApi'         = 'Qrz'
+            'CallApi'         = 'HamDb'
         } | ConvertTo-Json | Out-File -FilePath $hammyConfigPath
     
         Write-HostForScript "Configuration file created at -> [$hammyConfigPath]... please input your Azure Maps API key..."
