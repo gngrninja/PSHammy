@@ -9,7 +9,7 @@ function Invoke-CallSignLookup {
 
         )]
         [ValidateSet('HamDb','callook','Qrz')]
-        $Api = 'Qrz'
+        $Api = $config.CallApi
     )
 
     begin {
@@ -78,8 +78,8 @@ function Invoke-CallSignLookup {
                     $callSignData.Expires   = $resultData.expires
                     $callSignData.Status    = $resultData.status
                     $callSignData.Grid      = $resultData.grid
-                    $callSignData.Lat       = $resultData.lat
-                    $callSignData.Long      = $resultData.lon
+                    $callSignData.Lat       = [Math]::Round($resultData.lat, 2)
+                    $callSignData.Long      = [Math]::Round($resultData.lon, 2)
                     $callSignData.State     = $resultData.state
                     $callSignData.Country   = $resultData.country
                     $callSignData.FirstName = $resultData.fname 

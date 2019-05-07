@@ -20,6 +20,17 @@ function Invoke-LogCheck {
 
         Write-HostForScript -Message "Found [$($fromToday.Count)] log entries..."
 
+        [string]$myGrid = [string]::Empty        
+        if ((!$myCallData.Grid) -or ($myCallData.Grid -eq 'Unknown')) {
+
+            $myGrid = $wsjtxConfig.Configuration.MyGrid
+
+        } else {
+
+            $myGrid = $myCallData.Grid
+
+        }
+
         foreach ($contact in $fromToday) {
     
             $theirCallInfo  = $null
@@ -74,7 +85,7 @@ function Invoke-LogCheck {
                     MyState        = $myCallData.State
                     MyCountry      = $myCallData.Country
                     MyRig          = $wsjtxConfig.Configuration.Rig
-                    MyGrid         = $myCallData.Grid
+                    MyGrid         = $myGrid
                     TheirGrid      = $theirCallInfo.Grid
                     MyImage        = $myCallData.ProfileImage
                     TheirImage     = $theirCallInfo.ProfileImage
