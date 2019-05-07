@@ -12,10 +12,55 @@ function Invoke-PSHammy {
 
         )]
         [switch]
-        $AsJob
+        $AsJob,
+
+        [Parameter(
+
+        )]
+        [switch]
+        $CheckJob,
+
+        [Parameter(
+
+        )]
+        [switch]
+        $StopJob        
 
     )
-          
+    
+    if ($CheckJob) {
+
+        if ($jobInfo.State -eq 'Running') {
+
+            Receive-Job -Name $jobInfo.Name
+
+        } else {
+
+            Write-HostForScript -Message "Job not running or found!"
+
+        }
+        
+        break
+    }
+
+    if ($StopJob) {
+
+        if ($jobInfo.State -eq 'Running') {
+
+            Stop-Job -Name $jobInfo.Name
+            Remove-Job -Name $jobInfo.Name
+
+            Write-HostForScript -Message "Job stopped!"
+
+        } else {
+
+            Write-HostForScript -Message "Job not running or found!"
+            
+        }
+
+        break
+    }
+
     if (!(Test-Path -Path $wsjtxLogPath -ErrorAction SilentlyContinue)) {
     
         throw "Unable to access -> [$wsjtxLogPath], cannot continue!"
@@ -91,14 +136,14 @@ function Invoke-PSHammy {
 
     if ($AsJob) {
 
-        Start-Job -InitializationScript {
+        $script:jobInfo = Start-Job -InitializationScript {
 
             Import-Module "C:\users\thegn\repos\PSHammy\PSHammy"            
 
         } {
-            #-ArgumentList $logData, $processed, $myCallData, $myLat, $myLong, $myLocation, $DefaultCall, $config, $wsjtxConfig, $qrzCreds, $DoNotAutoDeleteImages, $hammyConfigPath, $wsjtxConfigPath, $qrzCredPath {
+            
             Invoke-LogDataGather
-            Invoke-LogCheck -Verbose
+            Invoke-LogCheck
 
         }
 
