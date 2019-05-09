@@ -56,11 +56,24 @@ function Get-AzureMapsInfo {
                     
                     if ($PinData) {
 
+                        $centerDir = $null
+                        
                         $getCenter = Get-CenterCoord -Coords $PinData
                         $center    = "$($getCenter.CentralLong),$($getCenter.CentralLat)"  
 
-                        $centerDif = $getCenter.CentralLong - $PinData.MyLong
+                        $centerLongDif = $getCenter.CentralLong - $PinData.MyLong
+                        $centerLatDif  = $PinData.MyLat - $getCenter.CentralLat
 
+                        if ($centerLongDif -gt $centerLatDif) {
+
+                            $centerDif = $centerLongDif
+
+                        } else {
+
+                            $centerDif = $centerLatDif
+
+                        }
+                        
                         Write-Verbose "Center Difference -> [$centerDif]"
 
                         switch ($centerDif) {
