@@ -13,7 +13,7 @@ function Invoke-LogCheck {
         
         if ($fromToday.Count -le 0) {
 
-            Write-HostForScript -Message "No log entries found -> [$($wsjtxLogPath)] -< aborting!"
+            Write-HostForScript -Message "No log entries found -> [$($wsjtxLogPath)] <- aborting!"
             
             break
         }
