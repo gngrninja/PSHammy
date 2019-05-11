@@ -63,7 +63,7 @@ switch ($PSVersionTable.PSEdition) {
                 } else {
 
                     $wsjtxLogPath    = "$($userDir)$($separator).local$($separator)share$($separator)WSJT-X$($separator)wsjtx.log"
-                    $wsjtxConfigPath = "$($userDir)$($separator).local$($separator)share$($separator)WSJT-X$($separator)WSJT-X.ini"
+                    $wsjtxConfigPath = "$($userDir)$($separator).config$($separator)WSJT-X.ini"
 
                 }
             }
