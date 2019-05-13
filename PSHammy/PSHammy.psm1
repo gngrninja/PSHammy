@@ -3,8 +3,8 @@ $script:separator        = [IO.Path]::DirectorySeparatorChar
 
 #null out vars used later
 [string]$script:userDir           = $null
-[string]$wsjtxLogPath             = $null
-[string]$wsjtxConfigPath          = $null
+[string]$script:wsjtxLogPath      = $null
+[string]$script:wsjtxConfigPath   = $null
 [string]$script:defaultPSHammyDir = $null
 
 #import functions
