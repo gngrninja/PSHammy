@@ -16,6 +16,7 @@ function Invoke-LogCheck {
             Write-HostForScript -Message "No log entries found -> [$($wsjtxLogPath)] <- aborting!"
             
             break
+
         }
 
         Write-HostForScript -Message "Found [$($fromToday.Count)] log entries..."
@@ -102,8 +103,34 @@ function Invoke-LogCheck {
                     $result = Get-AzureMapsInfo -RequestType MapPin -PinData $pinData -FindCenter  
         
                     Write-HostForScript -Message "Attempting to send data to Discord..."
-        
                     Invoke-WebHookSend -PinData $pinData -ContactData $contact -ImagePath $result
+
+                    Write-HostForScript -Message "Looking for ADIF match so we can try to post to QRZ..."
+        
+                    #Adif match                    
+                    $timeWorkedForMatch = $contact.WorkedTime -replace ':',''                    
+
+                    $adifMatch = $adifData | 
+                        Where-Object {
+
+                            $_.call -eq $theirCallInfo.CallSign -and
+                            $_.time_on -eq $timeWorkedForMatch
+
+                        }
+                                 
+                    if ($adifMatch) {
+
+                        if ((Read-Host -Prompt 'Post to QRZ?') -like "*y*") {
+                                                        
+                            $result = Invoke-QrzLogPost -Adif $adifMatch
+
+                            
+                            Write-HostForScript -Message "Results from QRZ log post:"
+                            Write-HostForScript -Message "$($result)"
+
+                        }
+
+                    }                                                                           
                         
                 }
                 catch {
@@ -116,6 +143,7 @@ function Invoke-LogCheck {
         
                     $processed = Invoke-ProcessedLog -Action Add -FilePath $processedPath -Guid $guid                    
                     $logData   = Import-WsjtxLog -LogPath $wsjtxLogPath
+                    $adifData  = Import-WsjtxAdifLog -LogPath $wsjtxAdifLogPath
 
                     Start-Sleep -Second 7
         
@@ -124,6 +152,7 @@ function Invoke-LogCheck {
 
                 $processed  = Invoke-ProcessedLog -Action Get -FilePath $processedPath                  
                 $logData    = Import-WsjtxLog -LogPath $wsjtxLogPath
+                $adifData   = Import-WsjtxAdifLog -LogPath $wsjtxAdifLogPath
 
                 Start-Sleep -Second 2
 

@@ -75,7 +75,9 @@ FunctionsToExport = @(
     'Invoke-PSHammy',
     'Invoke-LogCheck',
     'Invoke-LogDataGather',
-    'Open-WsjtxLog'
+    'Open-WsjtxLog',
+    'Get-QrzLog',
+    'Import-WsjtxAdifLog'
 )
 
 # Cmdlets to export from this module, for best performance, do not use wildcards and do not delete the entry, use an empty array if there are no cmdlets to export.

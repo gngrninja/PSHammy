@@ -19,8 +19,9 @@ function Invoke-LogDataGather {
     
     Write-HostForScript -Message "Attempting to import log data from [$wsjtxLogPath]..."
     
-    $script:logData = Import-WsjtxLog -LogPath $wsjtxLogPath
-    
+    $script:logData  = Import-WsjtxLog -LogPath $wsjtxLogPath
+    $script:adifData = Import-WsjtxAdifLog -LogPath $wsjtxAdifLogPath    
+
     if ($logData) {
         
         $lookupAddy = $null
@@ -43,8 +44,8 @@ function Invoke-LogDataGather {
         }
     
         $script:processed  = Invoke-ProcessedLog -Action Get -FilePath $processedPath     
-        $script:myCallData = Invoke-CallSignLookup -CallSign $DefaultCall    
-    
+        $script:myCallData = Invoke-CallSignLookup -CallSign $DefaultCall                    
+
         if ($myCallData.lat -and $myCallData.long) {
     
             $script:myLat  = $myCallData.lat
