@@ -78,37 +78,37 @@ function Get-AzureMapsInfo {
 
                         switch ($centerDif) {
 
-                            {$centerDif -lt 1 -and $centerDif -gt 0} {
+                            {$_ -lt 1 -and $_ -gt 0} {
 
                                 $DefaultZoom = '9'
 
                             }
 
-                            {($centerDif) -gt 1 -and ($centerDif -lt 2)} {
+                            {($_) -gt 1 -and ($_ -lt 2)} {
 
                                 $DefaultZoom = '5'
 
                             }
 
-                            {($centerDif) -gt 2 -and ($centerDif -lt 10)} {
+                            {($_) -gt 2 -and ($_ -lt 10)} {
 
                                 $DefaultZoom = '4'
 
                             }
 
-                            {($centerDif -gt 10) -and ($centerDif -lt 20)} {
+                            {($_ -gt 10) -and ($_ -lt 20)} {
 
                                 $DefaultZoom = '3' 
 
                             }
 
-                            {$centerDif -gt 20 -and $centerDif -lt 30} {
+                            {$_ -gt 20 -and $_ -lt 30} {
 
                                 $DefaultZoom = '2'
 
                             }
 
-                            {$centerDif -gt 30} {
+                            {$_ -gt 30} {
 
                                 $DefaultZoom = '0'  
                                 $center      = '0,0'     

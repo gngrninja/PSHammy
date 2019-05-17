@@ -124,6 +124,7 @@ function Invoke-PSHammy {
         @{
             'AzureMapsApiKey' = ''
             'QRZApiKey'       = ''
+            'QRZLogApiKey'    = ''
             'FooterTxt'       = ''
             'DefaultThumbUrl' = ''
             'CallApi'         = 'HamDb'
