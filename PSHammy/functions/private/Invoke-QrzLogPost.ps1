@@ -9,19 +9,19 @@ function Invoke-QrzLogPost {
 
     begin {
         
-        $findMe      = $null
-        $rawLogMatch = $null
+        #$findMe      = $null
+        #$rawLogMatch = $null
         $body        = $null
         
-        $findMe = ".+$($Adif.call).+$($Adif.time_on).+"
+        #$findMe = ".+$($Adif.call).+$($Adif.time_on).+"
         
-        $rawLogMatch = Get-Content -Path $wsjtxAdifLogPath | Where-Object {$_ -match $findMe}
+        #$rawLogMatch = Get-Content -Path $wsjtxAdifLogPath | Where-Object {$_ -match $findMe}
                         
         $body = @{
 
             ACTION = 'INSERT'
             KEY    = $config.QRZLogApiKey
-            ADIF   = $rawLogMatch
+            ADIF   = $Adif.RawAdif
 
         }        
 

@@ -9,8 +9,20 @@ function Write-HostForScript {
 
     begin {
 
-        $defaultForeground = 'Green'
-        $defaultBackground = 'Black'
+        $defaultForeground = $config.DefaultForeground
+        $defaultBackground = $config.DefaultBackground
+
+        if (!$defaultForeground) {
+
+            $defaultForeground = 'Green'
+
+        }
+
+        if (!$defaultBackground) {
+
+            $defaultBackground = 'Black'
+
+        }
         
     }
     

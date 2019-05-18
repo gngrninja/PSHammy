@@ -24,8 +24,19 @@ function Invoke-PSHammy {
 
         )]
         [switch]
-        $StopJob        
+        $StopJob,
+        
+        [Parameter(
 
+        )]
+        [switch]
+        $AutoLogQrz,
+
+        [Parameter(
+
+        )]
+        [switch]
+        $ClearProcessed
     )
     
     if ($CheckJob) {
@@ -105,13 +116,13 @@ function Invoke-PSHammy {
     
     }
     
-    if (!(Test-Path -Path $processedPath -ErrorAction SilentlyContinue)) {
+    if ($ClearProcessed -or !(Test-Path -Path $processedPath -ErrorAction SilentlyContinue)) {
     
         Write-HostForScript -Message "Path [$processedPath] does not exist... creating!"
-        New-Item -Path $processedPath -ItemType File | Out-Null
+        New-Item -Path $processedPath -ItemType File -Force | Out-Null
     
         #Info template for processed calls
-        @('ZZ0ZZ-01-01-01-01-01-01','ZZ0ZZ-01-01-01-01-01-01') | ConvertTo-Json | Out-File -FilePath $processedPath
+        @('ZZ0ZZ-01-01-01-01-01-01','ZZ0ZZ-01-01-01-01-01-01') | ConvertTo-Json | Out-File -FilePath $processedPath -Force
     
     }
     
@@ -122,12 +133,14 @@ function Invoke-PSHammy {
     
         #Info template for config file
         @{
-            'AzureMapsApiKey' = ''
-            'QRZApiKey'       = ''
-            'QRZLogApiKey'    = ''
-            'FooterTxt'       = ''
-            'DefaultThumbUrl' = ''
-            'CallApi'         = 'HamDb'
+            'AzureMapsApiKey'   = ''
+            'QRZApiKey'         = ''
+            'QRZLogApiKey'      = ''
+            'FooterTxt'         = ''
+            'DefaultThumbUrl'   = ''
+            'CallApi'           = 'HamDb'
+            'DefaultForeground' = 'Green'
+            'DefaultBackground' = 'Black'
         } | ConvertTo-Json | Out-File -FilePath $hammyConfigPath
     
         Write-HostForScript "Configuration file created at -> [$hammyConfigPath]... please input your Azure Maps API key..."
@@ -141,6 +154,10 @@ function Invoke-PSHammy {
         $script:jobInfo = Start-Job -InitializationScript {
 
             Import-Module "C:\users\thegn\repos\PSHammy\PSHammy"            
+
+        } -ArgumentList {
+
+            $AutoLogQrz
 
         } {
             

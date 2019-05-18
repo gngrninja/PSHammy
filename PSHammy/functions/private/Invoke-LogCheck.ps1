@@ -90,6 +90,8 @@ function Invoke-LogCheck {
                     TheirGrid      = $theirCallInfo.Grid
                     MyImage        = $myCallData.ProfileImage
                     TheirImage     = $theirCallInfo.ProfileImage
+                    TheirViews     = $theircallInfo.'u_views'
+                    MyViews        = $myCallData.'u_views'
                     
                 }
         
@@ -109,21 +111,24 @@ function Invoke-LogCheck {
         
                     #Adif match                    
                     $timeWorkedForMatch = $contact.WorkedTime -replace ':',''                    
+                    $dateWorkedForMatch = $contact.WorkedDate -replace '-',''
 
                     $adifMatch = $adifData | 
                         Where-Object {
 
                             $_.call -eq $theirCallInfo.CallSign -and
-                            $_.time_on -eq $timeWorkedForMatch
+                            $_.time_on -eq $timeWorkedForMatch  -and
+                            $_.qso_date -eq $dateWorkedForMatch
 
                         }
                                  
                     if ($adifMatch) {
 
-                        if ((Read-Host -Prompt 'Post to QRZ?') -like "*y*") {
-                                                        
-                            $result = Invoke-QrzLogPost -Adif $adifMatch
+                        if ($AutoLogQrz -or (Read-Host -Prompt 'Post to QRZ?') -like "*y*") {
+                                
+                            Write-HostForScript "Attempting to post log to QRZ..."
 
+                            $result = Invoke-QrzLogPost -Adif $adifMatch
                             
                             Write-HostForScript -Message "Results from QRZ log post:"
                             Write-HostForScript -Message "$($result)"

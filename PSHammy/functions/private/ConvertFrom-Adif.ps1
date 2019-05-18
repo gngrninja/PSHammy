@@ -2,30 +2,38 @@ function ConvertFrom-Adif {
     [cmdletbinding()]
     param(
         [Parameter(
-            Mandatory
+            Mandatory,
+            ValueFromPipeline
         )]
+        
         $Text
     )
 
     begin {
 
         [System.Collections.Generic.List[PSCustomObject]]$convertedText = @()
+        $convertedResult    = $null
+        
 
     }
 
     process {
 
-        $convertedResult = $Text.Split('<eor>').Trim()
         
+        $convertedResult = $Text.Split('<eor>').Trim()
+                
         $convertedResult | ForEach-Object {
-              
-            $curObject   = $null
-            $values      = $null
-            $headers     = $null
-            $regexHeader = $null
-            $regexValue  = $null
-            $findHeader  = $null
-            $findValue   = $null
+        
+            $rawConvertedResult = $null
+            $curObject          = $null
+            $values             = $null
+            $headers            = $null
+            $regexHeader        = $null
+            $regexValue         = $null
+            $findHeader         = $null
+            $findValue          = $null
+
+            $rawConvertedResult = "$($convertedResult)<eor>" 
 
             $regexHeader = [regex]::new('(?<=<).*?(?=>)')
             $regexValue  = [regex]::new('(?<=>).*?(?=<)|(?<=>).*')
@@ -36,7 +44,11 @@ function ConvertFrom-Adif {
             [array]$headers += $findHeader.Value          
             [array]$values  += $findValue.Value
     
-            $curObject = [PSCustomObject]@{}
+            $curObject = [PSCustomObject]@{
+
+                RawAdif = $rawConvertedResult
+
+            }
 
             if ($headers -and $values) {
 

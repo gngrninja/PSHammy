@@ -2,10 +2,10 @@ function Import-WsjtxLog {
     [cmdletbinding()]
     param(
         [Parameter(
-            
+            Mandatory
         )]
         [string]
-        $LogPath = '.\wsjtx.log'
+        $LogPath
     )
 
     begin {

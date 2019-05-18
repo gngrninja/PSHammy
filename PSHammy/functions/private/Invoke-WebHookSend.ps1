@@ -115,6 +115,7 @@ See the map below!
             $sentTo = $PinData.MyCountry
 
         }
+        
         if ($sentTo) {
             $embedBuilder.AddField(            
                 [DiscordField]::New(
@@ -166,6 +167,27 @@ See the map below!
             )  
         }
         
+                
+        if ($PinData.MyViews) {
+            $embedBuilder.AddField(
+                [DiscordField]::New(
+                    'My Profile Views',
+                    $PinData.MyViews,
+                    $true
+                )
+            )  
+        }
+
+        if ($PinData.TheirViews) {
+            $embedBuilder.AddField(
+                [DiscordField]::New(
+                    'Their Profile Views',
+                    $PinData.TheirViews,
+                    $true
+                )
+            )              
+        }
+        
         $embedBuilder.AddThumbnail(
             [DiscordThumbnail]::New(                
                 $thumbUrl
@@ -177,7 +199,7 @@ See the map below!
                 $config.FooterTxt,
                 $thumbUrl    
             )
-        )
+        )  
     
         Invoke-PSDsHook -EmbedObject $embedBuilder | Out-Null
         Start-Sleep -Second 1
