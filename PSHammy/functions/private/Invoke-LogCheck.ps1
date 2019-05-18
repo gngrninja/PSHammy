@@ -120,23 +120,29 @@ function Invoke-LogCheck {
                             $_.time_on -eq $timeWorkedForMatch  -and
                             $_.qso_date -eq $dateWorkedForMatch
 
-                        }
+                        } | Select-Object -Last 1
                                  
                     if ($adifMatch) {
-
+                        
                         if ($AutoLogQrz -or (Read-Host -Prompt 'Post to QRZ?') -like "*y*") {
                                 
                             Write-HostForScript "Attempting to post log to QRZ..."
 
                             $result = Invoke-QrzLogPost -Adif $adifMatch
-                            
-                            Write-HostForScript -Message "Results from QRZ log post:"
-                            Write-HostForScript -Message "$($result)"
 
+                            if ($result.Split('&')[1].Split('=')[1] -eq 'OK') {
+
+                                Write-HostForScript -Message "Results from QRZ log post:"
+                                Write-HostForScript -Message "Success -> [$result]!"
+
+                            } else {
+
+                                Write-HostForScript -Message "Results from QRZ log post:"
+                                Write-HostForScript -Message "Fail =( -> [$result]!"
+
+                            }                            
                         }
-
-                    }                                                                           
-                        
+                    }                                                                                                                       
                 }
                 catch {
         

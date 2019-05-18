@@ -15,8 +15,7 @@ function Invoke-QrzLogPost {
         
         #$findMe = ".+$($Adif.call).+$($Adif.time_on).+"
         
-        #$rawLogMatch = Get-Content -Path $wsjtxAdifLogPath | Where-Object {$_ -match $findMe}
-                        
+        #$rawLogMatch = Get-Content -Path $wsjtxAdifLogPath | Where-Object {$_ -match $findMe}                    
         $body = @{
 
             ACTION = 'INSERT'

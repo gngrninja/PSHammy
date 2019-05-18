@@ -33,7 +33,7 @@ function ConvertFrom-Adif {
             $findHeader         = $null
             $findValue          = $null
 
-            $rawConvertedResult = "$($convertedResult)<eor>" 
+            $rawConvertedResult = "$($_) <eor>" 
 
             $regexHeader = [regex]::new('(?<=<).*?(?=>)')
             $regexValue  = [regex]::new('(?<=>).*?(?=<)|(?<=>).*')
@@ -49,7 +49,7 @@ function ConvertFrom-Adif {
                 RawAdif = $rawConvertedResult
 
             }
-
+            
             if ($headers -and $values) {
 
                 $i = 0
