@@ -125,7 +125,7 @@ function Get-AzureMapsInfo {
                     }
                 }
                                 
-                $baseUrl = "$($prefix)/map/static/png?api-version=1.0&center=$($center)&pins=default%7CcoFF1493%7C%7C'$($PinData.MyCall)'$($PinData.MyLong)%20$($PinData.MyLat)%7C'$($PinData.TheirCall)'$($PinData.TheirLong)%20$($PinData.TheirLat)&zoom=$($DefaultZoom)&layer=basic"
+                $baseUrl = "$($prefix)/map/static/png?api-version=1.0&center=$($center)&pins=default%7CcoFF1493%7C%7C'$($PinData.MyCall)'$($PinData.MyLong)%20$($PinData.MyLat)%7C'$($PinData.TheirCall)'$($PinData.TheirLong)%20$($PinData.TheirLat)&zoom=$($DefaultZoom)&layer=basic&subscription-key=$($config.AzureMapsApiKey)"
                 
                 Write-Verbose "Request URL -> [$baseUrl]"
                 
@@ -137,14 +137,14 @@ function Get-AzureMapsInfo {
 
             'Search' {
 
-                $baseUrl = "$($prefix)/search/fuzzy/json?api-version=1.0&query=$($RequestData)"  
+                $baseUrl = "$($prefix)/search/fuzzy/json?api-version=1.0&query=$($RequestData)&subscription-key=$($config.AzureMapsApiKey)"  
                 $response = Invoke-RestMethod -Uri $baseUrl -Headers $headers
                 
             }
 
             'SearchAndPin' {
 
-                $baseUrl = "$($prefix)/search/fuzzy/json?api-version=1.0&query=$($RequestData)"
+                $baseUrl = "$($prefix)/search/fuzzy/json?api-version=1.0&query=$($RequestData)&subscription-key=$($config.AzureMapsApiKey)"
                 $response = Invoke-RestMethod -Uri $baseUrl -Headers $headers
 
                 $firstResult = $response.results[0].position
@@ -155,7 +155,7 @@ function Get-AzureMapsInfo {
                 $response = $null
                 $baseUrl  = $null
 
-                $baseUrl  = "$($prefix)/map/static/png?api-version=1.0&center=$($lon),$($lat)&pins=default%7C%7C$($lon)%20$($lat)&zoom=$($DefaultZoom)"
+                $baseUrl  = "$($prefix)/map/static/png?api-version=1.0&center=$($lon),$($lat)&pins=default%7C%7C$($lon)%20$($lat)&zoom=$($DefaultZoom)&subscription-key=$($config.AzureMapsApiKey)"
 
                 Write-Verbose "Request URL -> [$baseUrl]"
                 $response = Invoke-RestMethod -Uri $baseUrl -Headers $headers -OutFile ".\image.png"                
