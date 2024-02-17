@@ -1,13 +1,16 @@
 function Invoke-LogCheck {
     [cmdletbinding()]
     param(
+        [Parameter(
 
+        )]
+        $FromDay = 0
     )
     while ($true) {
     
         $fromToday = $logData | Where-Object {
 
-            [DateTime]$_.WorkedDate -ge [DateTime]::Now.ToString("yyyy-MM-dd")
+            [DateTime]$_.WorkedDate -ge [DateTime]::Now.AddDays($FromDay).ToString("yyyy-MM-dd")
     
         }
         
@@ -72,7 +75,6 @@ function Invoke-LogCheck {
                 }
                
                 $pinData = [PSCustomObject]@{
-        
                     MyCall         = $myCallData.CallSign
                     MyLat          = $myLat
                     MyLong         = $myLong
@@ -92,7 +94,6 @@ function Invoke-LogCheck {
                     TheirImage     = $theirCallInfo.ProfileImage
                     TheirViews     = $theircallInfo.'u_views'
                     MyViews        = $myCallData.'u_views'
-                    
                 }
         
                 Write-Verbose "Pin data:"
@@ -105,7 +106,6 @@ function Invoke-LogCheck {
                     $result = Get-AzureMapsInfo -RequestType MapPin -PinData $pinData -FindCenter  
         
                     Write-HostForScript -Message "Attempting to send data to Discord..."
-                    Invoke-WebHookSend -PinData $pinData -ContactData $contact -ImagePath $result
 
                     Write-HostForScript -Message "Looking for ADIF match so we can try to post to QRZ..."
         
@@ -115,11 +115,9 @@ function Invoke-LogCheck {
 
                     $adifMatch = $adifData | 
                         Where-Object {
-
-                            $_.call -eq $theirCallInfo.CallSign -and
-                            $_.time_on -eq $timeWorkedForMatch  -and
+                            $_.call     -eq $theirCallInfo.CallSign -and
+                            $_.time_on  -eq $timeWorkedForMatch     -and
                             $_.qso_date -eq $dateWorkedForMatch
-
                         } | Select-Object -Last 1
                                  
                     if ($adifMatch) {
@@ -142,7 +140,14 @@ function Invoke-LogCheck {
 
                             }                            
                         }
-                    }                                                                                                                       
+                    }   
+                    try {
+                        Invoke-WebHookSend -PinData $pinData -ContactData $contact -ImagePath $result
+                    }
+                    catch {
+                        Write-Error "Error sending Discord webhook -> [$($_.Exception.Message)]..."
+                    }
+                                                                                                                                        
                 }
                 catch {
         

@@ -36,11 +36,16 @@ function Invoke-PSHammy {
 
         )]
         [switch]
-        $ClearProcessed
+        $ClearProcessed,
+
+        [Parameter(
+
+        )]
+        [int]
+        $LogFromDays = 0
     )
     
     if ($CheckJob) {
-
         if ($jobInfo.State -eq 'Running') {
 
             Receive-Job -Name $jobInfo.Name
@@ -55,7 +60,6 @@ function Invoke-PSHammy {
     }
 
     if ($StopJob) {
-
         if ($jobInfo.State -eq 'Running') {
 
             Stop-Job -Name $jobInfo.Name
@@ -152,8 +156,9 @@ function Invoke-PSHammy {
     if ($AsJob) {
 
         $script:jobInfo = Start-Job -InitializationScript {
-
-            Import-Module "C:\users\thegn\repos\PSHammy\PSHammy"            
+            
+            $psHammyModulePath = "$($env:PSModulePath -split ':' | Select-Object -First 1)$([System.IO.Path]::DirectorySeparatorChar)PSHammy$([System.IO.Path]::DirectorySeparatorChar)PSHammy"
+            Import-Module $psHammyModulePath -Force          
 
         } -ArgumentList {
 
@@ -161,15 +166,15 @@ function Invoke-PSHammy {
 
         } {
             
-            Invoke-LogDataGather
-            Invoke-LogCheck
+            Invoke-LogDataGather 
+            Invoke-LogCheck -FromDay $LogFromDays
 
         }
 
     } else {
 
         Invoke-LogDataGather
-        Invoke-LogCheck
+        Invoke-LogCheck -FromDay $LogFromDays
 
     }  
 }    
